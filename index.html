@@ -184,7 +184,7 @@
 
       <!-- TAB 1: EXPLORACIÓN LIBRE -->
       <div id="pivot-tab" class="tab-content active">
-        <!-- Filtros adicionales para explorar -->
+        <!-- Filtros globales -->
         <div class="flex-row">
           <div class="flex-col">
             <label for="pivot-year">Año</label>
@@ -199,8 +199,27 @@
             <select id="pivot-store"></select>
           </div>
         </div>
+
+        <!-- Diseños rápidos / subniveles -->
+        <div class="flex-row">
+          <div class="flex-col">
+            <label for="pivot-layout">Diseño rápido</label>
+            <select id="pivot-layout"></select>
+          </div>
+          <div class="flex-col">
+            <label for="pivot-agg">Indicador principal</label>
+            <select id="pivot-agg"></select>
+          </div>
+          <div class="flex-col" style="align-self:flex-end;">
+            <button id="pivot-apply">Aplicar diseño</button>
+          </div>
+        </div>
+
         <div id="pivot-output">
-          <div class="hint">Sube tu CSV y aquí aparecerá la tabla dinámica (puedes cambiar a tablas o gráficas).</div>
+          <div class="hint">
+            Aquí puedes arrastrar más campos a “Rows / Filas” para agregar subniveles
+            (por ejemplo: Sucursal &gt; Categoría &gt; Producto).
+          </div>
         </div>
       </div>
 
@@ -274,7 +293,7 @@
         </div>
 
         <div class="hint" id="kpi-summary" style="margin-bottom:0.4rem;">
-          Elige años, mes y almacén (o “Todos”) y presiona <b>Calcular KPIs</b>.
+          Elige años, mes (o “Todos los meses”) y almacén (o “Todos”) y presiona <b>Calcular KPIs</b>.
         </div>
 
         <div id="kpi-table"></div>
@@ -283,7 +302,6 @@
   </div>
 
   <script>
-    // Utilidades generales
     function normalizarNombre(str) {
       return String(str)
         .toLowerCase()
@@ -305,10 +323,10 @@
     function parseFecha(raw) {
       if (!raw) return null;
       const sFull = String(raw).trim();
-      const s = sFull.split(" ")[0]; // ignorar hora si viene "dd/mm/aaaa hh:mm"
-      let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/); // yyyy-mm-dd
+      const s = sFull.split(" ")[0];
+      let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
       if (m) return { year: +m[1], month: +m[2] };
-      m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/); // dd/mm/yyyy
+      m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
       if (m) return { year: +m[3], month: +m[2] };
       const d = new Date(sFull);
       if (!isNaN(d)) return { year: d.getFullYear(), month: d.getMonth() + 1 };
@@ -322,10 +340,10 @@
       return n.toLocaleString("es-MX", { maximumFractionDigits: decimals, minimumFractionDigits: 0 });
     }
 
-    // Estado global
     let rawData = [];
     let meta = {
       fechaCol: null,
+      facturaCol: null,
       totalCol: null,
       utilidadCol: null,
       margenCol: null,
@@ -343,7 +361,6 @@
     let monthsList = [];
     let almacenesList = [];
 
-    // m2 por sucursal/almacén
     const M2_SUCURSAL = {
       "general": 1538,
       "express": 369,
@@ -355,7 +372,6 @@
       "todas": 3225
     };
 
-    // Traducción PivotTable
     (function(){
       $.pivotUtilities.locales = $.pivotUtilities.locales || {};
       $.pivotUtilities.locales.es = {
@@ -381,7 +397,6 @@
       };
     })();
 
-    // Tabs
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -394,7 +409,6 @@
       });
     });
 
-    // Carga CSV
     document.getElementById("file-input").addEventListener("change", function(e){
       const file = e.target.files && e.target.files[0];
       if (!file) return;
@@ -424,6 +438,7 @@
           const headers = Object.keys(data[0]);
 
           const fechaCol     = encontrarColumna(headers, ["fecha"]);
+          const facturaCol   = encontrarColumna(headers, ["factura"]);
           const totalCol     = encontrarColumna(headers, ["totalfac","total_fac","total"]);
           const utilidadCol  = encontrarColumna(headers, ["utilidad"]);
           const margenCol    = encontrarColumna(headers, ["margen"]);
@@ -467,7 +482,7 @@
           almacenesList.sort();
 
           rawData = data;
-          meta = { fechaCol, totalCol, utilidadCol, margenCol, sucCol, vendedorCol,
+          meta = { fechaCol, facturaCol, totalCol, utilidadCol, margenCol, sucCol, vendedorCol,
                    categoriaCol, clienteCol, descuentoCol, subtCol,
                    costoCol, tipoFacCol, almacenCol };
 
@@ -486,16 +501,17 @@
       });
     });
 
-    // ------------ EXPLORACIÓN LIBRE ------------
+    /* ====================== EXPLORACIÓN LIBRE ====================== */
 
     function inicializarPivotControles() {
       const ys = document.getElementById("pivot-year");
       const ms = document.getElementById("pivot-month");
       const ss = document.getElementById("pivot-store");
+      const layoutSel = document.getElementById("pivot-layout");
+      const aggSel = document.getElementById("pivot-agg");
 
-      [ys,ms,ss].forEach(sel=>{ while(sel.firstChild) sel.removeChild(sel.firstChild); });
+      [ys,ms,ss,layoutSel,aggSel].forEach(sel=>{ while(sel.firstChild) sel.removeChild(sel.firstChild); });
 
-      // Año
       let opt = document.createElement("option");
       opt.value = ""; opt.textContent = "Todos";
       ys.appendChild(opt);
@@ -504,7 +520,6 @@
         o.value = y; o.textContent = y; ys.appendChild(o);
       });
 
-      // Mes
       opt = document.createElement("option");
       opt.value=""; opt.textContent="Todos";
       ms.appendChild(opt);
@@ -514,7 +529,6 @@
         ms.appendChild(o);
       });
 
-      // Almacén
       opt = document.createElement("option");
       opt.value="__ALL__"; opt.textContent="Todos los almacenes";
       ss.appendChild(opt);
@@ -523,7 +537,53 @@
         o.value = a; o.textContent = a; ss.appendChild(o);
       });
 
+      let o = document.createElement("option");
+      o.value = "manual"; o.textContent = "Libre (arrastrar campos)";
+      layoutSel.appendChild(o);
+
+      if (meta.sucCol && meta.categoriaCol) {
+        o = document.createElement("option");
+        o.value = "suc_cat"; o.textContent = "Sucursal > Categoría";
+        layoutSel.appendChild(o);
+      }
+      if (meta.sucCol && meta.vendedorCol) {
+        o = document.createElement("option");
+        o.value = "suc_vend"; o.textContent = "Sucursal > Vendedor";
+        layoutSel.appendChild(o);
+      }
+      if (meta.sucCol && meta.categoriaCol && rawData[0].hasOwnProperty("producto")) {
+        o = document.createElement("option");
+        o.value = "suc_cat_prod"; o.textContent = "Sucursal > Categoría > Producto";
+        layoutSel.appendChild(o);
+      }
+      if (meta.sucCol && meta.clienteCol) {
+        o = document.createElement("option");
+        o.value = "suc_cliente"; o.textContent = "Sucursal > Cliente";
+        layoutSel.appendChild(o);
+      }
+
+      let oa = document.createElement("option");
+      oa.value = "count_fact"; oa.textContent = "Conteo de facturas";
+      aggSel.appendChild(oa);
+
+      if (meta.totalCol) {
+        oa = document.createElement("option");
+        oa.value = "sum_total"; oa.textContent = "Suma " + meta.totalCol;
+        aggSel.appendChild(oa);
+      }
+      if (meta.utilidadCol) {
+        oa = document.createElement("option");
+        oa.value = "sum_utilidad"; oa.textContent = "Suma " + meta.utilidadCol;
+        aggSel.appendChild(oa);
+      }
+      if (meta.margenCol) {
+        oa = document.createElement("option");
+        oa.value = "avg_margen"; oa.textContent = "Promedio " + meta.margenCol;
+        aggSel.appendChild(oa);
+      }
+
       ys.onchange = ms.onchange = ss.onchange = renderPivotConFiltros;
+      document.getElementById("pivot-apply").onclick = renderPivotConFiltros;
     }
 
     function obtenerDatosFiltradosPivot() {
@@ -548,11 +608,43 @@
 
       const renderers = $.extend($.pivotUtilities.renderers,
                                  $.pivotUtilities.plotly_renderers || {});
-      const rows = meta.sucCol ? [meta.sucCol] : [];
-      const cols = data[0] && data[0].hasOwnProperty("Año") ? ["Año"] : [];
-      const vals = [];
-      let aggregator = "Count";
-      if (meta.totalCol) { vals.push(meta.totalCol); aggregator = "Sum"; }
+
+      const layoutSel = document.getElementById("pivot-layout");
+      const aggSel = document.getElementById("pivot-agg");
+      const layout = layoutSel ? layoutSel.value : "manual";
+      const agg = aggSel ? aggSel.value : "count_fact";
+
+      let rows = [];
+      let cols = data[0] && data[0].hasOwnProperty("Año") ? ["Año"] : [];
+
+      if (layout === "suc_cat" && meta.sucCol && meta.categoriaCol) {
+        rows = [meta.sucCol, meta.categoriaCol];
+      } else if (layout === "suc_vend" && meta.sucCol && meta.vendedorCol) {
+        rows = [meta.sucCol, meta.vendedorCol];
+      } else if (layout === "suc_cat_prod" && meta.sucCol && meta.categoriaCol && data[0].hasOwnProperty("producto")) {
+        rows = [meta.sucCol, meta.categoriaCol, "producto"];
+      } else if (layout === "suc_cliente" && meta.sucCol && meta.clienteCol) {
+        rows = [meta.sucCol, meta.clienteCol];
+      } else {
+        rows = meta.sucCol ? [meta.sucCol] : [];
+      }
+
+      let aggregatorName = "Count";
+      let vals = [];
+
+      if (agg === "count_fact") {
+        aggregatorName = "Count";
+        vals = [];
+      } else if (agg === "sum_total" && meta.totalCol) {
+        aggregatorName = "Sum";
+        vals = [meta.totalCol];
+      } else if (agg === "sum_utilidad" && meta.utilidadCol) {
+        aggregatorName = "Sum";
+        vals = [meta.utilidadCol];
+      } else if (agg === "avg_margen" && meta.margenCol) {
+        aggregatorName = "Average";
+        vals = [meta.margenCol];
+      }
 
       $("#pivot-output").empty();
       try {
@@ -564,7 +656,7 @@
             rows: rows,
             cols: cols,
             vals: vals,
-            aggregatorName: aggregator,
+            aggregatorName: aggregatorName,
             rendererName: "Table"
           },
           true
@@ -577,7 +669,7 @@
       }
     }
 
-    // ------------ COMPARATIVO AÑO VS AÑO ------------
+    /* ====================== COMPARATIVO AÑO VS AÑO ====================== */
 
     function inicializarYoYControles() {
       const yearA = document.getElementById("yoy-year-a");
@@ -743,7 +835,7 @@
       }, {responsive:true});
     }
 
-    // ------------ KPIs VENTAS ------------
+    /* ====================== KPIs VENTAS ====================== */
 
     function inicializarKpiControles() {
       const yA = document.getElementById("kpi-year-a-select");
@@ -762,9 +854,9 @@
         const o2=document.createElement("option"); o2.value=y;o2.textContent=y;yB.appendChild(o2);
       });
 
-      const oEmptyM=document.createElement("option");
-      oEmptyM.value=""; oEmptyM.textContent="Mes…";
-      mSel.appendChild(oEmptyM);
+      const oAllMonths=document.createElement("option");
+      oAllMonths.value="__ALL__"; oAllMonths.textContent="Todos los meses";
+      mSel.appendChild(oAllMonths);
       monthsList.forEach(m=>{
         const opt=document.createElement("option");
         opt.value=m; opt.textContent=MESES[m]+" ("+m+")"; mSel.appendChild(opt);
@@ -781,11 +873,13 @@
 
     document.getElementById("kpi-run").addEventListener("click", calcularKPIs);
 
-    function filtrarDatos(year, month, almacenValue) {
+    function filtrarDatos(year, monthValue, almacenValue) {
       const almCol = meta.almacenCol || meta.sucCol;
+      const month = (monthValue === "__ALL__" || !monthValue) ? 0 : parseInt(monthValue,10);
+
       return rawData.filter(r=>{
         if (r["Año"] != year) return false;
-        if (r["Mes"] != month) return false;
+        if (month && r["Mes"] != month) return false;
         if (almCol && almacenValue && almacenValue !== "__ALL__") {
           return (r[almCol] ?? "(Sin almacén)") == almacenValue;
         }
@@ -801,7 +895,8 @@
       let costoTotal = 0;
       let descuentoTotal = 0;
       let subtotalTotal = 0;
-      let nFacturas = 0;
+
+      const facturasSet = new Set();
 
       dataset.forEach(r=>{
         const v = meta.totalCol ? (parseFloat(r[meta.totalCol]) || 0) : 0;
@@ -815,7 +910,10 @@
         costoTotal += c;
         descuentoTotal += d;
         subtotalTotal += s;
-        if (r["factura"] || r["Factura"]) nFacturas++;
+
+        if (meta.facturaCol && r[meta.facturaCol] != null) {
+          facturasSet.add(String(r[meta.facturaCol]));
+        }
 
         if (meta.tipoFacCol && r[meta.tipoFacCol]) {
           const tf = String(r[meta.tipoFacCol]).toLowerCase();
@@ -827,8 +925,10 @@
         }
       });
 
-      const descBase = subtotalTotal > 0 ? subtotalTotal + descuentoTotal : ventasTotal + descuentoTotal;
-      const pctDesc = descBase ? (descuentoTotal / descBase) * 100 : NaN;
+      const nFacturas = facturasSet.size;
+
+      const baseDesc = (subtotalTotal + descuentoTotal) || (ventasTotal + descuentoTotal);
+      const pctDesc = baseDesc ? (descuentoTotal / baseDesc) * 100 : NaN;
       const margenPct = ventasTotal ? (utilidadTotal / ventasTotal) * 100 : NaN;
       const ticketProm = nFacturas ? (ventasTotal / nFacturas) : NaN;
       const pctCosto = ventasTotal ? (costoTotal / ventasTotal) * 100 : NaN;
@@ -862,12 +962,12 @@
       }
       const yearA = document.getElementById("kpi-year-a-select").value;
       const yearB = document.getElementById("kpi-year-b-select").value;
-      const month = parseInt(document.getElementById("kpi-month").value || "0",10);
+      const monthValue = document.getElementById("kpi-month").value;
       const store = document.getElementById("kpi-store").value;
 
-      if (!yearA || !yearB || !month) {
+      if (!yearA || !yearB) {
         document.getElementById("kpi-summary").textContent =
-          "Selecciona Año A, Año B y Mes.";
+          "Selecciona Año A y Año B (el mes puede ser 'Todos los meses').";
         return;
       }
 
@@ -879,8 +979,8 @@
         m2Sucursal = M2_SUCURSAL["todas"] || null;
       }
 
-      const dataA = filtrarDatos(yearA, month, store);
-      const dataB = filtrarDatos(yearB, month, store);
+      const dataA = filtrarDatos(yearA, monthValue, store);
+      const dataB = filtrarDatos(yearB, monthValue, store);
 
       const rA = calcularResumen(dataA, m2Sucursal);
       const rB = calcularResumen(dataB, m2Sucursal);
@@ -918,7 +1018,7 @@
         },
         {
           kpi: "Ticket Promedio $",
-          detalle: "$ por operación",
+          detalle: "$ por operación (factura única)",
           tipo: "money",
           a: rA.ticketProm, b: rB.ticketProm
         },
@@ -962,7 +1062,7 @@
       const tbody=document.createElement("tbody");
       kpis.forEach(row=>{
         const tr=document.createElement("tr");
-        const diff = row.a==null||row.b==null||isNaN(row.a)||isNaN(row.b) ? NaN : (row.b - row.a);
+        const diff = (row.a==null||row.b==null||isNaN(row.a)||isNaN(row.b)) ? NaN : (row.b - row.a);
         let valA, valB, valYoY;
         if (row.tipo==="money") {
           valA = formatNumber(row.a);
@@ -971,7 +1071,7 @@
         } else {
           valA = isNaN(row.a) ? "–" : row.a.toFixed(1)+" %";
           valB = isNaN(row.b) ? "–" : row.b.toFixed(1)+" %";
-          valYoY = (isNaN(diff) ? "–" : diff.toFixed(1)+" pts");
+          valYoY = isNaN(diff) ? "–" : diff.toFixed(1)+" pts";
         }
         [row.kpi,row.detalle,valA,valB,valYoY].forEach(v=>{
           const td=document.createElement("td"); td.textContent=v; tr.appendChild(td);
@@ -981,9 +1081,13 @@
       table.appendChild(tbody);
       tableDiv.appendChild(table);
 
+      const monthValue = document.getElementById("kpi-month").value;
+      const monthDesc = (monthValue==="__ALL__" || !monthValue)
+        ? "Todos los meses"
+        : MESES[parseInt(monthValue,10)] + " (" + monthValue + ")";
       const descAlm = (store && store!=="__ALL__") ? (" | Almacén: "+store) : " | Todos los almacenes";
       document.getElementById("kpi-summary").textContent =
-        MESES[month]+" "+yearA+" vs "+MESES[month]+" "+yearB + descAlm +
+        monthDesc+" "+yearA+" vs "+monthDesc+" "+yearB + descAlm +
         (m2Sucursal ? " | m²: "+formatNumber(m2Sucursal,0) : " | m²: (sin dato)");
     }
   </script>
