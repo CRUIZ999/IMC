@@ -49,11 +49,13 @@
     .pvtUi, .pvtTable { font-size: 0.75rem; }
   </style>
 
-  <!-- PivotTable CSS -->
+  <!-- CSS PivotTable + jQuery UI -->
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.css" />
 
   <!-- Librerías JS (orden IMPORTANTE) -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
@@ -89,7 +91,7 @@
     <!-- Lado derecho -->
     <div class="card">
       <div id="output">
-        <div class="hint">Cambia tu CSV a .csv, súbelo y aquí aparecerá la tabla dinámica.</div>
+        <div class="hint">Sube tu CSV y aquí aparecerá la tabla dinámica.</div>
       </div>
     </div>
   </div>
