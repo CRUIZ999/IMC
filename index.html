@@ -1,385 +1,126 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Analizador de Ventas – Tabla Dinámica</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+  // --------- Utilidades ---------
+  function normalizarNombre(str) {
+    return String(str)
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "")
+      .replace(/_/g, "");
+  }
 
-  <!-- Estilos básicos -->
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    body { background: #0f172a; color: #e5e7eb; min-height: 100vh; display: flex; flex-direction: column; }
-
-    header {
-      padding: 0.9rem 1.4rem;
-      background: linear-gradient(90deg, #ea580c, #f97316);
-      color: #0f172a;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
-      position: sticky;
-      top: 0;
-      z-index: 20;
+  function encontrarColumna(headers, aliases) {
+    const normHeaders = headers.map(h => normalizarNombre(h));
+    for (const alias of aliases) {
+      const normAlias = normalizarNombre(alias);
+      const idx = normHeaders.indexOf(normAlias);
+      if (idx >= 0) return headers[idx];
     }
-    header h1 { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; }
-    header h1 span.logo {
-      width: 34px; height: 34px; border-radius: 999px;
-      display: inline-flex; align-items: center; justify-content: center;
-      background: #0f172a; color: #f97316;
-    }
-    header .subtitle { font-size: 0.8rem; }
+    return null;
+  }
 
-    main {
-      max-width: 1500px;
-      margin: 0 auto;
-      padding: 1.1rem 1.4rem 1.6rem;
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 1rem;
-    }
-    @media (max-width: 1024px) { main { grid-template-columns: 1fr; } }
+  function extraerFecha(raw) {
+    if (!raw) return null;
+    const s = String(raw).trim();
 
-    .card {
-      background: #020617;
-      border-radius: 0.9rem;
-      border: 1px solid rgba(148,163,184,0.35);
-      padding: 0.9rem 1rem;
-      box-shadow: 0 16px 35px rgba(15,23,42,0.8);
-    }
-    .card h2 {
-      font-size: 0.95rem;
-      margin-bottom: 0.55rem;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-    .card h2 .icon { font-size: 1rem; }
+    let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+    if (m) return { year:+m[1], month:+m[2] };
 
-    .sidebar { display: flex; flex-direction: column; gap: 0.75rem; }
-    .field { margin-bottom: 0.45rem; }
-    label { font-size: 0.78rem; color: #9ca3af; margin-bottom: 0.15rem; display: block; }
-    input[type="file"] {
-      width: 100%;
-      padding: 0.4rem 0.55rem;
-      border-radius: 0.45rem;
-      border: 1px solid rgba(148,163,184,0.5);
-      background: #020617;
-      color: #e5e7eb;
-      font-size: 0.82rem;
-      outline: none;
-    }
-    input[type="file"]:focus {
-      border-color: #f97316;
-      box-shadow: 0 0 0 1px rgba(249,115,22,0.7);
-    }
+    m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+    if (m) return { year:+m[3], month:+m[2] };
 
-    .hint { font-size: 0.72rem; color: #9ca3af; margin-top: 0.25rem; line-height: 1.3; }
-    hr { border: none; border-top: 1px dashed rgba(148,163,184,0.45); margin: 0.6rem 0; }
+    const d = new Date(s);
+    if (!isNaN(d)) return { year:d.getFullYear(), month:d.getMonth()+1 };
+    return null;
+  }
 
-    .badge {
-      display: inline-block;
-      font-size: 0.7rem;
-      padding: 0.15rem 0.5rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.6);
-      background: rgba(15,23,42,0.9);
-      color: #e5e7eb;
-    }
+  const MESES = ["","enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 
-    #status {
-      font-size: 0.78rem;
-      color: #e5e7eb;
-      margin-top: 0.3rem;
-    }
+  document.getElementById('file-input').addEventListener('change', function (e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
 
-    #output-wrapper {
-      background: #020617;
-      border-radius: 0.9rem;
-      border: 1px solid rgba(148,163,184,0.35);
-      padding: 0.6rem;
-      box-shadow: 0 16px 35px rgba(15,23,42,0.8);
-      overflow: auto;
-    }
+    document.getElementById('status').textContent = 'Leyendo archivo...';
 
-    footer { padding: 0.7rem 1.4rem 1rem; font-size: 0.7rem; color: #6b7280; text-align: center; }
+    Papa.parse(file, {
+      header: true,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+      complete: function (results) {
+        let data = results.data || [];
 
-    /* Ajuste leve del tamaño de letra de la pivottable */
-    .pvtUi, .pvtTable { font-size: 0.78rem; }
-  </style>
-
-  <!-- CSS PivotTable -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.css" />
-
-  <!-- Librerías JS -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.min.js"></script>
-  <!-- Plotly para gráficos -->
-  <script src="https://cdn.plot.ly/plotly-2.31.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/plotly_renderers.min.js"></script>
-  <!-- PapaParse para CSV -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-</head>
-<body>
-  <header>
-    <div>
-      <h1><span class="logo">📊</span>Analizador de Ventas</h1>
-      <div class="subtitle">
-        Sube tu archivo de ventas (facturas) y arma tablas dinámicas interactivas, incluyendo comparativos año vs año.
-      </div>
-    </div>
-    <span class="badge">Ferretería El Cedro</span>
-  </header>
-
-  <main>
-    <!-- LADO IZQUIERDO -->
-    <aside class="sidebar card">
-      <h2><span class="icon">📂</span>Cargar datos</h2>
-      <div class="field">
-        <label for="file-input">Archivo CSV de ventas</label>
-        <input type="file" id="file-input" accept=".csv,text/csv" />
-        <div class="hint">
-          Usa tu archivo con columnas como:<br>
-          <code>
-          factura, fecha, estatus, descuento, subt_fac, total_fac, iva, id cliente,
-          id clase, clave, cant_surt, cve_mon, unidad, cve_suc, id vendedor, cliente,
-          producto, cantidad pz, almacen, hora, costoprom2, marca, costo1, vendedor,
-          filtro1, filtro2, filtro3, Tipo de Factura, costo2, utilidad, margen, categoria
-          </code>
-        </div>
-        <div id="status">Sin archivo cargado.</div>
-      </div>
-
-      <hr />
-
-      <h2><span class="icon">🧩</span>Cómo usar la tabla dinámica</h2>
-      <div class="hint">
-        Una vez cargado el archivo verás un panel similar a Excel:
-        <ul style="margin-left:1rem;margin-top:0.25rem;">
-          <li>Lista de campos (columnas) arriba.</li>
-          <li>Áreas de <b>Filas</b>, <b>Columnas</b>, <b>Valores</b> y <b>Filtros</b>.</li>
-        </ul>
-        Arrastra los campos para construir tu vista de análisis.
-      </div>
-
-      <hr />
-
-      <h2><span class="icon">📅</span>Comparar año vs año (mismo mes)</h2>
-      <div class="hint">
-        El sistema crea campos derivados de <b>fecha</b>: <b>Año</b>, <b>Mes</b>, <b>Mes Nombre</b> y <b>Año-Mes</b>.<br><br>
-        Para comparar, por ejemplo, Noviembre 2024 vs Noviembre 2025:
-        <ol style="margin-left:1rem;margin-top:0.25rem;">
-          <li>En <b>Filtros</b>, pon <b>Mes Nombre</b> y selecciona “noviembre”.</li>
-          <li>En <b>Columnas</b>, pon <b>Año</b>.</li>
-          <li>En <b>Filas</b>, pon <b>cve_suc</b> (sucursal) o <b>categoria</b>.</li>
-          <li>En <b>Valores</b>, pon <b>total_fac</b> con agregación “Sum”.</li>
-        </ol>
-        Verás cada sucursal/categoría con columnas por año para cotejar rápidamente.
-        Puedes cambiar “Renderer” a <b>Plotly Bar Chart</b> para ver la gráfica.
-      </div>
-
-      <hr />
-
-      <h2><span class="icon">💡</span>Ideas de análisis</h2>
-      <div class="hint">
-        - Ventas por sucursal y año → Filas: cve_suc, Columnas: Año, Valores: total_fac (Sum).<br>
-        - Margen por vendedor → Filas: vendedor, Valores: margen (Average).<br>
-        - Top clientes → Filas: cliente, Valores: total_fac (Sum), ordena de mayor a menor.
-      </div>
-    </aside>
-
-    <!-- LADO DERECHO -->
-    <section>
-      <div class="card" style="margin-bottom:0.7rem;">
-        <h2><span class="icon">⚙️</span>Área de análisis interactivo</h2>
-        <div class="hint">
-          Aquí aparece la tabla dinámica. Puedes:
-          <ul style="margin-left:1rem;margin-top:0.25rem;">
-            <li>Cambiar la agregación (Suma, Promedio, Conteo, Máx, Mín, etc.).</li>
-            <li>Usar diferentes vistas: tabla, tabla con barras, gráficos de barras, líneas, áreas, etc.</li>
-            <li>Filtrar directo desde los menús de la propia PivotTable.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div id="output-wrapper">
-        <div id="output">
-          <div style="padding:0.5rem;font-size:0.8rem;color:#9ca3af;">
-            Carga un CSV en el panel izquierdo para iniciar el análisis.
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    Panel tipo tabla dinámica basado en PivotTable.js – pensado para las ventas de Ferretería El Cedro.
-  </footer>
-
-  <script>
-    // --------- Utilidades para mapear nombres de columnas ---------
-    function normalizarNombre(str) {
-      return String(str)
-        .toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quita acentos
-        .replace(/\s+/g, "")                              // espacios
-        .replace(/_/g, "");                               // guiones bajos
-    }
-
-    function encontrarColumna(headers, aliases) {
-      const normHeaders = headers.map(h => normalizarNombre(h));
-      for (const alias of aliases) {
-        const normAlias = normalizarNombre(alias);
-        const idx = normHeaders.indexOf(normAlias);
-        if (idx >= 0) return headers[idx];
-      }
-      return null;
-    }
-
-    // --------- Parse de fecha (para campos derivados) ---------
-    function extraerFecha(raw) {
-      if (!raw) return null;
-      if (raw instanceof Date && !isNaN(raw)) {
-        return { year: raw.getFullYear(), month: raw.getMonth() + 1, day: raw.getDate() };
-      }
-      const s = String(raw).trim();
-      if (!s) return null;
-
-      // yyyy-mm-dd o yyyy/mm/dd
-      let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
-      if (m) {
-        const y = parseInt(m[1], 10);
-        const mo = parseInt(m[2], 10);
-        const d = parseInt(m[3], 10);
-        if (!isNaN(y) && !isNaN(mo) && !isNaN(d)) return { year: y, month: mo, day: d };
-      }
-
-      // dd-mm-yyyy o dd/mm/yyyy (muy típico en MX)
-      m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
-      if (m) {
-        const d = parseInt(m[1], 10);
-        const mo = parseInt(m[2], 10);
-        const y = parseInt(m[3], 10);
-        if (!isNaN(y) && !isNaN(mo) && !isNaN(d)) return { year: y, month: mo, day: d };
-      }
-
-      // fallback al parser de JS
-      const d2 = new Date(s);
-      if (!isNaN(d2)) {
-        return { year: d2.getFullYear(), month: d2.getMonth() + 1, day: d2.getDate() };
-      }
-      return null;
-    }
-
-    const NOMBRES_MESES = [
-      "", "enero","febrero","marzo","abril","mayo","junio",
-      "julio","agosto","septiembre","octubre","noviembre","diciembre"
-    ];
-
-    // --------- Carga de CSV ---------
-    document.getElementById('file-input').addEventListener('change', function (e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-
-      document.getElementById('status').textContent = 'Leyendo archivo...';
-
-      Papa.parse(file, {
-        header: true,
-        dynamicTyping: true,
-        skipEmptyLines: true,
-        complete: function (results) {
-          const data = results.data || [];
-          if (!data.length) {
-            document.getElementById('status').textContent = 'El archivo no tiene registros.';
-            return;
-          }
-
-          const headers = Object.keys(data[0]);
-
-          // Mapear columnas importantes según tus nombres
-          const fechaCol   = encontrarColumna(headers, ['fecha']);
-          const totalCol   = encontrarColumna(headers, ['totalfac','total_fac','total']);
-          const sucCol     = encontrarColumna(headers, ['cvesuc','cve_suc','sucursal']);
-          const categoriaCol = encontrarColumna(headers, ['categoria','categoría']);
-          const vendedorCol  = encontrarColumna(headers, ['vendedor','idvendedor']);
-
-          const meta = {
-            fechaCol,
-            totalCol,
-            sucCol,
-            categoriaCol,
-            vendedorCol
-          };
-
-          document.getElementById('status').textContent =
-            'Archivo cargado: ' + file.name + ' (' + data.length + ' filas).';
-
-          crearPivot(data, meta);
-        },
-        error: function (err) {
-          document.getElementById('status').textContent = 'Error al leer el CSV: ' + err.message;
+        if (!data.length) {
+          document.getElementById('status').textContent = 'Archivo vacío.';
+          return;
         }
-      });
+
+        // ✅ LIMPIEZA CRÍTICA DE ENCABEZADOS
+        const cleaned = data.map(row => {
+          const newRow = {};
+          Object.keys(row).forEach(k => {
+            const cleanKey = k.trim();   // <- elimina espacios invisibles
+            newRow[cleanKey] = row[k];
+          });
+          return newRow;
+        });
+
+        const headers = Object.keys(cleaned[0]);
+
+        const fechaCol = encontrarColumna(headers, ['fecha']);
+        const totalCol = encontrarColumna(headers, ['totalfac','total_fac','total']);
+        const sucCol   = encontrarColumna(headers, ['cvesuc','cve_suc']);
+        const vendedorCol = encontrarColumna(headers, ['vendedor']);
+        const categoriaCol = encontrarColumna(headers, ['categoria']);
+
+        document.getElementById('status').textContent =
+          'Archivo cargado correctamente: ' + file.name + ' (' + cleaned.length + ' filas).';
+
+        crearPivotSeguro(cleaned, fechaCol, totalCol, sucCol, vendedorCol, categoriaCol);
+      },
+      error: function (err) {
+        document.getElementById('status').textContent = 'Error al leer CSV: ' + err.message;
+      }
     });
+  });
 
-    // --------- Crear tabla dinámica ---------
-    function crearPivot(data, meta) {
-      const renderers = $.extend(
-        $.pivotUtilities.renderers,
-        $.pivotUtilities.plotly_renderers
-      );
+  function crearPivotSeguro(data, fechaCol, totalCol, sucCol, vendedorCol, categoriaCol) {
+    const renderers = $.extend(
+      $.pivotUtilities.renderers,
+      $.pivotUtilities.plotly_renderers
+    );
 
-      const derived = {};
+    const derived = {};
 
-      // Campos derivados a partir de "fecha"
-      if (meta.fechaCol) {
-        derived["Año"] = function (row) {
-          const info = extraerFecha(row[meta.fechaCol]);
-          return info ? info.year : "";
-        };
-        derived["Mes"] = function (row) {
-          const info = extraerFecha(row[meta.fechaCol]);
-          return info ? info.month : "";
-        };
-        derived["Mes Nombre"] = function (row) {
-          const info = extraerFecha(row[meta.fechaCol]);
-          return info ? NOMBRES_MESES[info.month] : "";
-        };
-        derived["Año-Mes"] = function (row) {
-          const info = extraerFecha(row[meta.fechaCol]);
-          if (!info) return "";
-          const mm = String(info.month).padStart(2, "0");
-          return info.year + "-" + mm;
-        };
-      }
-
-      // Configuración por defecto pensada para tus datos
-      const defaultRows = [];
-      const defaultCols = [];
-      const defaultVals = [];
-      let defaultAgg = "Count";
-
-      if (meta.sucCol) defaultRows.push(meta.sucCol);
-      if (meta.fechaCol) defaultCols.push("Año");   // usamos derivado
-      if (meta.totalCol) {
-        defaultVals.push(meta.totalCol);
-        defaultAgg = "Sum";
-      }
-
-      $("#output").pivotUI(
-        data,
-        {
-          renderers: renderers,
-          derivedAttributes: derived,
-          rows: defaultRows,
-          cols: defaultCols,
-          vals: defaultVals,
-          aggregatorName: defaultAgg,
-          rendererName: "Table"
-        },
-        true
-      );
+    if (fechaCol) {
+      derived["Año"] = r => {
+        const f = extraerFecha(r[fechaCol]);
+        return f ? f.year : "";
+      };
+      derived["Mes"] = r => {
+        const f = extraerFecha(r[fechaCol]);
+        return f ? f.month : "";
+      };
+      derived["Mes Nombre"] = r => {
+        const f = extraerFecha(r[fechaCol]);
+        return f ? MESES[f.month] : "";
+      };
     }
-  </script>
-</body>
-</html>
+
+    const rows = sucCol ? [sucCol] : [];
+    const cols = fechaCol ? ["Año"] : [];
+    const vals = totalCol ? [totalCol] : [];
+
+    $("#output").empty().pivotUI(
+      data,
+      {
+        derivedAttributes: derived,
+        rows: rows,
+        cols: cols,
+        vals: vals,
+        aggregatorName: totalCol ? "Sum" : "Count",
+        rendererName: "Table",
+        renderers: renderers
+      },
+      true
+    );
+  }
+</script>
