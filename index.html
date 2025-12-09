@@ -1,126 +1,233 @@
-<script>
-  // --------- Utilidades ---------
-  function normalizarNombre(str) {
-    return String(str)
-      .toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, "")
-      .replace(/_/g, "");
-  }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Analizador de Ventas – Tabla Dinámica</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  function encontrarColumna(headers, aliases) {
-    const normHeaders = headers.map(h => normalizarNombre(h));
-    for (const alias of aliases) {
-      const normAlias = normalizarNombre(alias);
-      const idx = normHeaders.indexOf(normAlias);
-      if (idx >= 0) return headers[idx];
+  <!-- Estilos simples -->
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { background: #0f172a; color: #e5e7eb; min-height: 100vh; padding: 1rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.3rem; }
+    .sub { font-size: 0.8rem; margin-bottom: 0.8rem; color: #cbd5f5; }
+    .panel {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 1rem;
     }
-    return null;
-  }
+    @media (max-width: 900px){ .panel{ grid-template-columns: 1fr; } }
 
-  function extraerFecha(raw) {
-    if (!raw) return null;
-    const s = String(raw).trim();
+    .card {
+      background: #020617;
+      border-radius: 0.8rem;
+      border: 1px solid rgba(148,163,184,0.4);
+      padding: 0.8rem;
+    }
+    label { font-size: 0.8rem; margin-bottom: 0.25rem; display: block; }
+    input[type="file"] {
+      width: 100%;
+      padding: 0.4rem;
+      border-radius: 0.4rem;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.8rem;
+    }
+    .hint { font-size: 0.75rem; color: #9ca3af; margin-top: 0.3rem; line-height: 1.3; }
+    #status { font-size: 0.8rem; margin-top: 0.4rem; }
 
-    let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
-    if (m) return { year:+m[1], month:+m[2] };
+    #output {
+      background: #020617;
+      border-radius: 0.8rem;
+      border: 1px solid rgba(148,163,184,0.4);
+      padding: 0.4rem;
+      min-height: 80px;
+      overflow: auto;
+    }
 
-    m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
-    if (m) return { year:+m[3], month:+m[2] };
+    .pvtUi, .pvtTable { font-size: 0.75rem; }
+  </style>
 
-    const d = new Date(s);
-    if (!isNaN(d)) return { year:d.getFullYear(), month:d.getMonth()+1 };
-    return null;
-  }
+  <!-- PivotTable CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.css" />
 
-  const MESES = ["","enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  <!-- Librerías JS (orden IMPORTANTE) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pivottable@2.23.0/dist/pivot.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+  <h1>Analizador de Ventas</h1>
+  <div class="sub">
+    Sube tu archivo de ventas (facturas) y arma tablas dinámicas tipo Excel (incluye campos Año / Mes).
+  </div>
 
-  document.getElementById('file-input').addEventListener('change', function (e) {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
+  <div class="panel">
+    <!-- Lado izquierdo -->
+    <div class="card">
+      <label for="file-input">Archivo CSV de ventas</label>
+      <input type="file" id="file-input" accept=".csv,text/csv" />
+      <div class="hint">
+        Debe tener columnas como:<br>
+        factura, fecha, estatus, descuento, subt_fac, total_fac, iva, id cliente,
+        id clase, clave, cant_surt, cve_mon, unidad, cve_suc, id vendedor, cliente,
+        producto, cantidad pz, almacen, hora, costoprom2, marca, costo1, vendedor,
+        filtro1, filtro2, filtro3, Tipo de Factura, costo2, utilidad, margen, categoria.
+      </div>
+      <div id="status">Sin archivo cargado.</div>
 
-    document.getElementById('status').textContent = 'Leyendo archivo...';
+      <div class="hint" style="margin-top:0.8rem;">
+        👉 Para comparar mismo mes año vs año:<br>
+        1. En la tabla dinámica usa el campo derivado <b>Mes Nombre</b> en Filtros.<br>
+        2. Usa <b>Año</b> en Columnas.<br>
+        3. Usa <b>cve_suc</b> o <b>categoria</b> en Filas.<br>
+        4. Usa <b>total_fac</b> como Valor (Sum).
+      </div>
+    </div>
 
-    Papa.parse(file, {
-      header: true,
-      dynamicTyping: true,
-      skipEmptyLines: true,
-      complete: function (results) {
-        let data = results.data || [];
+    <!-- Lado derecho -->
+    <div class="card">
+      <div id="output">
+        <div class="hint">Cambia tu CSV a .csv, súbelo y aquí aparecerá la tabla dinámica.</div>
+      </div>
+    </div>
+  </div>
 
-        if (!data.length) {
-          document.getElementById('status').textContent = 'Archivo vacío.';
-          return;
-        }
+  <script>
+    // === utilidades ===
+    function normalizarNombre(str) {
+      return String(str)
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "")
+        .replace(/_/g, "");
+    }
 
-        // ✅ LIMPIEZA CRÍTICA DE ENCABEZADOS
-        const cleaned = data.map(row => {
-          const newRow = {};
-          Object.keys(row).forEach(k => {
-            const cleanKey = k.trim();   // <- elimina espacios invisibles
-            newRow[cleanKey] = row[k];
-          });
-          return newRow;
-        });
-
-        const headers = Object.keys(cleaned[0]);
-
-        const fechaCol = encontrarColumna(headers, ['fecha']);
-        const totalCol = encontrarColumna(headers, ['totalfac','total_fac','total']);
-        const sucCol   = encontrarColumna(headers, ['cvesuc','cve_suc']);
-        const vendedorCol = encontrarColumna(headers, ['vendedor']);
-        const categoriaCol = encontrarColumna(headers, ['categoria']);
-
-        document.getElementById('status').textContent =
-          'Archivo cargado correctamente: ' + file.name + ' (' + cleaned.length + ' filas).';
-
-        crearPivotSeguro(cleaned, fechaCol, totalCol, sucCol, vendedorCol, categoriaCol);
-      },
-      error: function (err) {
-        document.getElementById('status').textContent = 'Error al leer CSV: ' + err.message;
+    function encontrarColumna(headers, posibles) {
+      const normHeaders = headers.map(h => normalizarNombre(h));
+      for (const alias of posibles) {
+        const na = normalizarNombre(alias);
+        const idx = normHeaders.indexOf(na);
+        if (idx >= 0) return headers[idx];
       }
-    });
-  });
-
-  function crearPivotSeguro(data, fechaCol, totalCol, sucCol, vendedorCol, categoriaCol) {
-    const renderers = $.extend(
-      $.pivotUtilities.renderers,
-      $.pivotUtilities.plotly_renderers
-    );
-
-    const derived = {};
-
-    if (fechaCol) {
-      derived["Año"] = r => {
-        const f = extraerFecha(r[fechaCol]);
-        return f ? f.year : "";
-      };
-      derived["Mes"] = r => {
-        const f = extraerFecha(r[fechaCol]);
-        return f ? f.month : "";
-      };
-      derived["Mes Nombre"] = r => {
-        const f = extraerFecha(r[fechaCol]);
-        return f ? MESES[f.month] : "";
-      };
+      return null;
     }
 
-    const rows = sucCol ? [sucCol] : [];
-    const cols = fechaCol ? ["Año"] : [];
-    const vals = totalCol ? [totalCol] : [];
+    function parseFecha(raw) {
+      if (!raw) return null;
+      const s = String(raw).trim();
+      // yyyy-mm-dd o yyyy/mm/dd
+      let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+      if (m) return { year: +m[1], month: +m[2] };
+      // dd-mm-yyyy o dd/mm/yyyy
+      m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+      if (m) return { year: +m[3], month: +m[2] };
+      const d = new Date(s);
+      if (!isNaN(d)) return { year: d.getFullYear(), month: d.getMonth() + 1 };
+      return null;
+    }
 
-    $("#output").empty().pivotUI(
-      data,
-      {
-        derivedAttributes: derived,
-        rows: rows,
-        cols: cols,
-        vals: vals,
-        aggregatorName: totalCol ? "Sum" : "Count",
-        rendererName: "Table",
-        renderers: renderers
-      },
-      true
-    );
-  }
-</script>
+    const MESES = ["","enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+    // === carga de archivo ===
+    document.getElementById('file-input').addEventListener('change', function (e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      document.getElementById('status').textContent = 'Leyendo archivo...';
+
+      Papa.parse(file, {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true,
+        complete: function (results) {
+          let data = results.data || [];
+          if (!data.length) {
+            document.getElementById('status').textContent = 'Archivo sin registros.';
+            return;
+          }
+
+          // limpiar encabezados: quitar espacios basura
+          data = data.map(row => {
+            const nuevo = {};
+            Object.keys(row).forEach(k => {
+              const limpio = k.trim();
+              nuevo[limpio] = row[k];
+            });
+            return nuevo;
+          });
+
+          const headers = Object.keys(data[0]);
+
+          const fechaCol = encontrarColumna(headers, ["fecha"]);
+          const totalCol = encontrarColumna(headers, ["totalfac","total_fac","total"]);
+          const sucCol   = encontrarColumna(headers, ["cvesuc","cve_suc"]);
+          const vendedorCol = encontrarColumna(headers, ["vendedor"]);
+          const categoriaCol = encontrarColumna(headers, ["categoria","categoría"]);
+
+          document.getElementById('status').textContent =
+            "Archivo cargado: " + file.name + " (" + data.length + " filas).";
+
+          crearPivot(data, { fechaCol, totalCol, sucCol, vendedorCol, categoriaCol });
+        },
+        error: function (err) {
+          document.getElementById('status').textContent = 'Error al leer CSV: ' + err.message;
+        }
+      });
+    });
+
+    function crearPivot(data, meta) {
+      const renderers = $.pivotUtilities.renderers;
+
+      const derived = {};
+      if (meta.fechaCol) {
+        derived["Año"] = function (row) {
+          const f = parseFecha(row[meta.fechaCol]);
+          return f ? f.year : "";
+        };
+        derived["Mes"] = function (row) {
+          const f = parseFecha(row[meta.fechaCol]);
+          return f ? f.month : "";
+        };
+        derived["Mes Nombre"] = function (row) {
+          const f = parseFecha(row[meta.fechaCol]);
+          return f ? MESES[f.month] : "";
+        };
+      }
+
+      const rows = meta.sucCol ? [meta.sucCol] : [];
+      const cols = meta.fechaCol ? ["Año"] : [];
+      const vals = [];
+      let aggregator = "Count";
+      if (meta.totalCol) {
+        vals.push(meta.totalCol);
+        aggregator = "Sum";
+      }
+
+      $("#output").empty();
+
+      try {
+        $("#output").pivotUI(
+          data,
+          {
+            renderers: renderers,
+            derivedAttributes: derived,
+            rows: rows,
+            cols: cols,
+            vals: vals,
+            aggregatorName: aggregator,
+            rendererName: "Table"
+          },
+          true
+        );
+      } catch (e) {
+        console.error(e);
+        document.getElementById('output').innerHTML =
+          '<div style="color:#fca5a5;font-size:0.8rem;">Error al generar la tabla dinámica: ' +
+          e.message + '</div>';
+      }
+    }
+  </script>
+</body>
+</html>
