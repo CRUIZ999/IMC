@@ -166,30 +166,45 @@
       <div id="yoy-kpis" class="kpis" style="display:none;">
         <div class="kpi">
           <div class="kpi-label">Total Año A</div>
-          <div class="kpi-value" id="kpi-year-a">–</div>
+          <div class="kpi-value" id="yoy-total-a">–</div>
         </div>
         <div class="kpi">
           <div class="kpi-label">Total Año B</div>
-          <div class="kpi-value" id="kpi-year-b">–</div>
+          <div class="kpi-value" id="yoy-total-b">–</div>
         </div>
         <div class="kpi">
           <div class="kpi-label">Diferencia</div>
-          <div class="kpi-value" id="kpi-diff">–</div>
+          <div class="kpi-value" id="yoy-diff">–</div>
         </div>
         <div class="kpi">
           <div class="kpi-label">% Variación</div>
-          <div class="kpi-value" id="kpi-pct">–</div>
+          <div class="kpi-value" id="yoy-pct">–</div>
         </div>
       </div>
 
-      <!-- TAB 1 -->
+      <!-- TAB 1: EXPLORACIÓN LIBRE -->
       <div id="pivot-tab" class="tab-content active">
+        <!-- Filtros adicionales para explorar -->
+        <div class="flex-row">
+          <div class="flex-col">
+            <label for="pivot-year">Año</label>
+            <select id="pivot-year"></select>
+          </div>
+          <div class="flex-col">
+            <label for="pivot-month">Mes</label>
+            <select id="pivot-month"></select>
+          </div>
+          <div class="flex-col">
+            <label for="pivot-store">Almacén</label>
+            <select id="pivot-store"></select>
+          </div>
+        </div>
         <div id="pivot-output">
           <div class="hint">Sube tu CSV y aquí aparecerá la tabla dinámica (puedes cambiar a tablas o gráficas).</div>
         </div>
       </div>
 
-      <!-- TAB 2 -->
+      <!-- TAB 2: COMPARATIVO AÑO VS AÑO -->
       <div id="yoy-tab" class="tab-content">
         <div class="flex-row">
           <div class="flex-col">
@@ -221,7 +236,7 @@
         </div>
 
         <div class="hint" id="yoy-summary" style="margin-bottom:0.4rem;">
-          Selecciona parámetros y haz clic en <b>Calcular comparativo</b>.
+          Selecciona Año A, Año B, Mes y Métrica y luego haz clic en <b>Calcular comparativo</b>.
         </div>
 
         <div style="display:flex; flex-wrap:wrap; gap:0.6rem;">
@@ -238,12 +253,12 @@
       <div id="kpi-tab" class="tab-content">
         <div class="flex-row">
           <div class="flex-col">
-            <label for="kpi-year-a">Año A (por ejemplo 2024)</label>
-            <select id="kpi-year-a"></select>
+            <label for="kpi-year-a-select">Año A (por ejemplo 2024)</label>
+            <select id="kpi-year-a-select"></select>
           </div>
           <div class="flex-col">
-            <label for="kpi-year-b">Año B (por ejemplo 2025)</label>
-            <select id="kpi-year-b"></select>
+            <label for="kpi-year-b-select">Año B (por ejemplo 2025)</label>
+            <select id="kpi-year-b-select"></select>
           </div>
           <div class="flex-col">
             <label for="kpi-month">Mes</label>
@@ -289,12 +304,13 @@
 
     function parseFecha(raw) {
       if (!raw) return null;
-      const s = String(raw).trim();
-      let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+      const sFull = String(raw).trim();
+      const s = sFull.split(" ")[0]; // ignorar hora si viene "dd/mm/aaaa hh:mm"
+      let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/); // yyyy-mm-dd
       if (m) return { year: +m[1], month: +m[2] };
-      m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+      m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/); // dd/mm/yyyy
       if (m) return { year: +m[3], month: +m[2] };
-      const d = new Date(s);
+      const d = new Date(sFull);
       if (!isNaN(d)) return { year: d.getFullYear(), month: d.getMonth() + 1 };
       return null;
     }
@@ -458,7 +474,9 @@
           document.getElementById("status").textContent =
             "Archivo cargado: " + file.name + " (" + data.length + " filas).";
 
-          inicializarPivot();
+          inicializarPivotControles();
+          renderPivotConFiltros();
+
           inicializarYoYControles();
           inicializarKpiControles();
         },
@@ -468,13 +486,70 @@
       });
     });
 
-    // Pivot
-    function inicializarPivot() {
+    // ------------ EXPLORACIÓN LIBRE ------------
+
+    function inicializarPivotControles() {
+      const ys = document.getElementById("pivot-year");
+      const ms = document.getElementById("pivot-month");
+      const ss = document.getElementById("pivot-store");
+
+      [ys,ms,ss].forEach(sel=>{ while(sel.firstChild) sel.removeChild(sel.firstChild); });
+
+      // Año
+      let opt = document.createElement("option");
+      opt.value = ""; opt.textContent = "Todos";
+      ys.appendChild(opt);
+      yearsList.forEach(y=>{
+        const o=document.createElement("option");
+        o.value = y; o.textContent = y; ys.appendChild(o);
+      });
+
+      // Mes
+      opt = document.createElement("option");
+      opt.value=""; opt.textContent="Todos";
+      ms.appendChild(opt);
+      monthsList.forEach(m=>{
+        const o=document.createElement("option");
+        o.value = m; o.textContent = MESES[m] + " ("+m+")";
+        ms.appendChild(o);
+      });
+
+      // Almacén
+      opt = document.createElement("option");
+      opt.value="__ALL__"; opt.textContent="Todos los almacenes";
+      ss.appendChild(opt);
+      almacenesList.forEach(a=>{
+        const o=document.createElement("option");
+        o.value = a; o.textContent = a; ss.appendChild(o);
+      });
+
+      ys.onchange = ms.onchange = ss.onchange = renderPivotConFiltros;
+    }
+
+    function obtenerDatosFiltradosPivot() {
+      const year = parseInt(document.getElementById("pivot-year").value || "0",10);
+      const month = parseInt(document.getElementById("pivot-month").value || "0",10);
+      const store = document.getElementById("pivot-store").value;
+      const almCol = meta.almacenCol || meta.sucCol;
+
+      return rawData.filter(r=>{
+        if (year && r["Año"] != year) return false;
+        if (month && r["Mes"] != month) return false;
+        if (almCol && store && store !== "__ALL__") {
+          return (r[almCol] ?? "(Sin almacén)") == store;
+        }
+        return true;
+      });
+    }
+
+    function renderPivotConFiltros() {
       if (!rawData.length) return;
+      const data = obtenerDatosFiltradosPivot();
+
       const renderers = $.extend($.pivotUtilities.renderers,
                                  $.pivotUtilities.plotly_renderers || {});
       const rows = meta.sucCol ? [meta.sucCol] : [];
-      const cols = rawData[0].hasOwnProperty("Año") ? ["Año"] : [];
+      const cols = data[0] && data[0].hasOwnProperty("Año") ? ["Año"] : [];
       const vals = [];
       let aggregator = "Count";
       if (meta.totalCol) { vals.push(meta.totalCol); aggregator = "Sum"; }
@@ -482,7 +557,7 @@
       $("#pivot-output").empty();
       try {
         $("#pivot-output").pivotUI(
-          rawData,
+          data,
           {
             locale: "es",
             renderers: renderers,
@@ -502,7 +577,8 @@
       }
     }
 
-    // -------- YoY controles y cálculo --------
+    // ------------ COMPARATIVO AÑO VS AÑO ------------
+
     function inicializarYoYControles() {
       const yearA = document.getElementById("yoy-year-a");
       const yearB = document.getElementById("yoy-year-b");
@@ -608,10 +684,10 @@
       const tDiff = tB - tA;
       const tPct  = tA===0 ? (tB===0 ? NaN : Infinity) : (tDiff/tA)*100;
 
-      document.getElementById("kpi-year-a").textContent = formatNumber(tA);
-      document.getElementById("kpi-year-b").textContent = formatNumber(tB);
-      document.getElementById("kpi-diff").textContent   = formatNumber(tDiff);
-      document.getElementById("kpi-pct").textContent =
+      document.getElementById("yoy-total-a").textContent = formatNumber(tA);
+      document.getElementById("yoy-total-b").textContent = formatNumber(tB);
+      document.getElementById("yoy-diff").textContent   = formatNumber(tDiff);
+      document.getElementById("yoy-pct").textContent =
         isNaN(tPct) ? "–" : (!isFinite(tPct) ? "∞" : tPct.toFixed(1) + " %");
 
       document.getElementById("yoy-summary").textContent =
@@ -667,10 +743,11 @@
       }, {responsive:true});
     }
 
-    // -------- KPIs por almacén --------
+    // ------------ KPIs VENTAS ------------
+
     function inicializarKpiControles() {
-      const yA = document.getElementById("kpi-year-a");
-      const yB = document.getElementById("kpi-year-b");
+      const yA = document.getElementById("kpi-year-a-select");
+      const yB = document.getElementById("kpi-year-b-select");
       const mSel = document.getElementById("kpi-month");
       const sSel = document.getElementById("kpi-store");
 
@@ -783,8 +860,8 @@
         document.getElementById("kpi-summary").textContent = "No hay datos cargados.";
         return;
       }
-      const yearA = document.getElementById("kpi-year-a").value;
-      const yearB = document.getElementById("kpi-year-b").value;
+      const yearA = document.getElementById("kpi-year-a-select").value;
+      const yearB = document.getElementById("kpi-year-b-select").value;
       const month = parseInt(document.getElementById("kpi-month").value || "0",10);
       const store = document.getElementById("kpi-store").value;
 
