@@ -2,160 +2,90 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Analizador de Ventas – Ferretería El Cedro</title>
+  <title>Panel de Ventas – Ferretería El Cedro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- ESTILOS -->
+  <!-- Estilos básicos -->
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    body {
-      background: #0f172a;
-      color: #e5e7eb;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { background: #0f172a; color: #e5e7eb; min-height: 100vh; display: flex; flex-direction: column; }
 
     header {
-      padding: 1rem 1.5rem;
+      padding: 0.9rem 1.4rem;
       background: linear-gradient(90deg, #ea580c, #f97316);
       color: #0f172a;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 1rem;
+      align-items: center;
       box-shadow: 0 10px 25px rgba(0,0,0,0.35);
       position: sticky;
       top: 0;
       z-index: 20;
     }
-
-    header h1 {
-      font-size: 1.6rem;
-      font-weight: 800;
-      letter-spacing: 0.03em;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-
+    header h1 { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; }
     header h1 span.logo {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      border-radius: 999px;
-      background: #0f172a;
-      color: #f97316;
-      font-size: 1.3rem;
-      box-shadow: 0 0 0 2px rgba(15,23,42,0.6);
+      width: 34px; height: 34px; border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #0f172a; color: #f97316;
     }
-
-    header .subtitle {
-      font-size: 0.85rem;
-      opacity: 0.9;
-    }
+    header .subtitle { font-size: 0.8rem; }
 
     main {
-      padding: 1.25rem 1.5rem 2rem;
       max-width: 1500px;
       width: 100%;
       margin: 0 auto;
+      padding: 1.1rem 1.4rem 1.6rem;
       display: grid;
       grid-template-columns: 320px 1fr;
       gap: 1rem;
     }
-
-    @media (max-width: 1024px) {
-      main {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media (max-width: 1024px) { main { grid-template-columns: 1fr; } }
 
     .card {
-      background: radial-gradient(circle at top left, rgba(248,113,113,0.08), transparent 55%) #020617;
-      border-radius: 1rem;
-      padding: 1rem 1.1rem;
-      border: 1px solid rgba(148,163,184,0.3);
-      box-shadow: 0 18px 40px rgba(15,23,42,0.7);
+      background: #020617;
+      border-radius: 0.9rem;
+      border: 1px solid rgba(148,163,184,0.35);
+      padding: 0.9rem 1rem;
+      box-shadow: 0 16px 35px rgba(15,23,42,0.8);
     }
-
     .card h2 {
-      font-size: 1rem;
-      margin-bottom: 0.7rem;
+      font-size: 0.95rem;
+      margin-bottom: 0.55rem;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      font-weight: 700;
-      color: #e5e7eb;
+      gap: 0.35rem;
     }
+    .card h2 .icon { font-size: 1rem; }
 
-    .card h2 span.icon {
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.9rem;
-      background: rgba(248,250,252,0.08);
-    }
+    .sidebar { display: flex; flex-direction: column; gap: 0.75rem; }
+    .field { margin-bottom: 0.45rem; }
+    label { font-size: 0.78rem; color: #9ca3af; margin-bottom: 0.15rem; display: block; }
 
-    label {
-      font-size: 0.8rem;
-      margin-bottom: 0.25rem;
-      display: block;
-      color: #9ca3af;
-    }
-
-    select,
-    input[type="file"],
-    input[type="number"],
-    button {
+    select, input[type="file"], input[type="number"], button {
       width: 100%;
-      padding: 0.45rem 0.6rem;
+      padding: 0.4rem 0.55rem;
       border-radius: 0.45rem;
       border: 1px solid rgba(148,163,184,0.5);
       background: #020617;
       color: #e5e7eb;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       outline: none;
     }
-
-    select:focus,
-    input[type="file"]:focus,
-    input[type="number"]:focus {
+    select:focus, input[type="file"]:focus, input[type="number"]:focus {
       border-color: #f97316;
       box-shadow: 0 0 0 1px rgba(249,115,22,0.7);
     }
-
     button {
-      border: none;
       background: linear-gradient(135deg, #fb923c, #f97316);
       color: #0f172a;
+      border: none;
       font-weight: 700;
       cursor: pointer;
-      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.1s;
-      box-shadow: 0 12px 25px rgba(249,115,22,0.6);
+      box-shadow: 0 10px 22px rgba(249,115,22,0.6);
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
     }
-
-    button:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.02);
-    }
-
-    button:active {
-      transform: translateY(1px) scale(0.99);
-      box-shadow: 0 6px 15px rgba(249,115,22,0.5);
-    }
-
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(1px) scale(0.99); box-shadow: 0 6px 15px rgba(249,115,22,0.5); }
     .btn-secondary {
       background: #020617;
       color: #e5e7eb;
@@ -163,124 +93,54 @@
       box-shadow: none;
     }
 
-    .btn-secondary:hover {
-      filter: brightness(1.1);
+    .hint { font-size: 0.72rem; color: #9ca3af; margin-top: 0.25rem; line-height: 1.3; }
+    hr { border: none; border-top: 1px dashed rgba(148,163,184,0.45); margin: 0.6rem 0; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+
+    .tabs { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; }
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 0.35rem 0.4rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: #020617;
+      color: #e5e7eb;
+    }
+    .tab-btn.active {
+      background: #f97316;
+      color: #0f172a;
+      border-color: #f97316;
     }
 
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-    }
-
-    .sidebar .hint {
-      font-size: 0.75rem;
-      color: #9ca3af;
-      margin-top: 0.4rem;
-      line-height: 1.4;
-    }
-
-    .sidebar .field {
-      margin-bottom: 0.5rem;
-    }
-
-    .sidebar .field-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.45rem;
-    }
-
-    .sidebar hr {
-      border: none;
-      border-top: 1px dashed rgba(148,163,184,0.4);
-      margin: 0.7rem 0;
-    }
-
-    .content-area {
-      display: flex;
-      flex-direction: column;
-      gap: 0.9rem;
-    }
+    .content-area { display: flex; flex-direction: column; gap: 0.8rem; }
 
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 0.7rem;
+      grid-template-columns: repeat(auto-fit,minmax(170px,1fr));
+      gap: 0.6rem;
     }
-
     .kpi {
-      padding: 0.6rem 0.75rem;
-      border-radius: 0.9rem;
-      border: 1px solid rgba(148,163,184,0.4);
-      background: linear-gradient(145deg, rgba(15,23,42,0.95), rgba(30,64,175,0.55));
-      box-shadow: 0 14px 30px rgba(15,23,42,0.65);
+      padding: 0.45rem 0.6rem;
+      border-radius: 0.8rem;
+      border: 1px solid rgba(148,163,184,0.5);
+      background: linear-gradient(145deg, rgba(15,23,42,0.98), rgba(30,64,175,0.6));
     }
+    .kpi .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .08em; color: #9ca3af; }
+    .kpi .value { font-size: 1.1rem; font-weight: 800; }
+    .kpi .sub { font-size: 0.7rem; color: #9ca3af; }
 
-    .kpi .label {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: #9ca3af;
-      margin-bottom: 0.2rem;
-    }
+    .flex-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .flex-col { flex: 1 1 280px; min-width: 0; }
 
-    .kpi .value {
-      font-size: 1.2rem;
-      font-weight: 800;
-      color: #f9fafb;
-    }
-
-    .kpi .sub {
-      font-size: 0.7rem;
-      color: #9ca3af;
-      margin-top: 0.15rem;
-    }
-
-    .flex-row {
-      display: flex;
-      gap: 0.9rem;
-      flex-wrap: wrap;
-    }
-
-    .flex-col {
-      flex: 1 1 280px;
-      min-width: 0;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.75rem;
-      margin-top: 0.4rem;
-    }
-
-    th,
-    td {
-      border-bottom: 1px solid rgba(55,65,81,0.9);
-      padding: 0.3rem 0.4rem;
-      text-align: right;
-      white-space: nowrap;
-    }
-
-    th {
-      background: rgba(15,23,42,0.95);
-      position: sticky;
-      top: 0;
-      z-index: 5;
-      text-align: left;
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    td:first-child,
-    th:first-child {
-      text-align: left;
-    }
-
-    tbody tr:nth-child(even) {
-      background: rgba(15,23,42,0.6);
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    th, td { padding: 0.3rem 0.4rem; border-bottom: 1px solid rgba(55,65,81,0.9); white-space: nowrap; text-align: right; }
+    th { background: rgba(15,23,42,0.95); position: sticky; top: 0; z-index: 5; text-align: left; text-transform: uppercase; font-size: 0.7rem; }
+    td:first-child, th:first-child { text-align: left; }
+    tbody tr:nth-child(even) { background: rgba(15,23,42,0.7); }
 
     .table-container {
       max-height: 260px;
@@ -290,379 +150,231 @@
       background: radial-gradient(circle at top, rgba(148,163,184,0.25), rgba(15,23,42,0.95));
     }
 
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.18rem 0.45rem;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      background: rgba(15,23,42,0.92);
-      border: 1px solid rgba(148,163,184,0.6);
-      color: #e5e7eb;
-    }
+    .empty-state { font-size: 0.78rem; color: #9ca3af; padding: 0.4rem 0.3rem 0.7rem; }
+    .muted { font-size: 0.75rem; color: #9ca3af; margin-top: 0.2rem; }
 
-    .tag-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: 0.75rem;
-      padding: 0.15rem 0.35rem;
-      border-radius: 999px;
-      background: rgba(15,23,42,0.9);
-      border: 1px solid rgba(148,163,184,0.5);
-      color: #9ca3af;
-    }
-
-    .status-pill span.dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #facc15;
-    }
-
-    .muted {
-      font-size: 0.75rem;
-      color: #9ca3af;
-      margin-top: 0.25rem;
-    }
-
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-top: 0.25rem;
-    }
-
+    .chip-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
     .chip {
       font-size: 0.7rem;
-      padding: 0.15rem 0.45rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.5);
-      background: rgba(15,23,42,0.95);
-      color: #e5e7eb;
-      opacity: 0.85;
-    }
-
-    .empty-state {
-      font-size: 0.8rem;
-      color: #9ca3af;
-      padding: 0.4rem 0.2rem 0.7rem;
-    }
-
-    footer {
-      padding: 0.7rem 1.5rem 1rem;
-      font-size: 0.7rem;
-      color: #6b7280;
-      text-align: center;
-    }
-
-    .section-title-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.4rem;
-    }
-
-    .badge {
-      font-size: 0.7rem;
-      padding: 0.12rem 0.38rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.7);
-      background: rgba(15,23,42,0.95);
-      color: #e5e7eb;
-    }
-
-    .yoy-summary {
-      font-size: 0.75rem;
-      color: #e5e7eb;
-      margin-top: 0.3rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-
-    .yoy-summary span {
       padding: 0.15rem 0.4rem;
       border-radius: 999px;
-      background: rgba(15,23,42,0.9);
       border: 1px solid rgba(148,163,184,0.6);
+      background: rgba(15,23,42,0.96);
     }
+
+    footer { padding: 0.7rem 1.4rem 1rem; font-size: 0.7rem; color: #6b7280; text-align: center; }
   </style>
 
-  <!-- LIBRERÍAS -->
+  <!-- Librerías -->
   <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <header>
     <div>
-      <h1>
-        <span class="logo">🔧</span>
-        Panel de Ventas – El Cedro
-      </h1>
-      <div class="subtitle">
-        Sube tu archivo de ventas y arma análisis detallados, incluyendo comparativo Año vs Año del mismo mes.
-      </div>
+      <h1><span class="logo">🔧</span>Panel de Ventas – El Cedro</h1>
+      <div class="subtitle">Carga tu CSV de ventas y analiza por sucursal, vendedor, categoría y comparativos año vs año.</div>
     </div>
-    <div class="status-pill">
-      <span class="dot"></span>
-      Listo para analizar CSV
-    </div>
+    <div style="font-size:0.8rem;">GitHub Pages listo</div>
   </header>
 
   <main>
-    <!-- SIDEBAR -->
+    <!-- LATERAL: archivo + filtros -->
     <aside class="sidebar card">
-      <h2><span class="icon">📂</span>Archivo & Filtros</h2>
-
+      <h2><span class="icon">📂</span>Archivo</h2>
       <div class="field">
-        <label for="file-input">Archivo CSV de ventas</label>
+        <label for="file-input">Archivo CSV</label>
         <input type="file" id="file-input" accept=".csv,text/csv" />
         <div class="hint">
-          👉 Exporta tu archivo de Excel/Sheets como <b>CSV</b> y súbelo aquí.<br>
-          Incluye columnas como Año, Mes, Sucursal, Vendedor, Contado, Crédito, Utilidad, etc.
+          Exporta desde Excel/Sheets a <b>CSV</b> con columnas como: Año, Mes, Sucursal, Vendedor, Contado, Crédito, Utilidad, etc.
         </div>
       </div>
 
       <hr />
 
-      <h2><span class="icon">🎛️</span>Filtros por dimensiones</h2>
+      <h2><span class="icon">🎛️</span>Filtros globales</h2>
 
       <div class="field">
-        <label>Filtro 1 (opcional)</label>
+        <label>Filtro 1</label>
         <div class="field-row">
-          <select id="filter1-column">
-            <option value="">Columna…</option>
-          </select>
-          <select id="filter1-value">
-            <option value="">Valor…</option>
-          </select>
+          <select id="filter1-column"><option value="">Columna…</option></select>
+          <select id="filter1-value"><option value="">Valor…</option></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Filtro 2</label>
+        <div class="field-row">
+          <select id="filter2-column"><option value="">Columna…</option></select>
+          <select id="filter2-value"><option value="">Valor…</option></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Filtro 3</label>
+        <div class="field-row">
+          <select id="filter3-column"><option value="">Columna…</option></select>
+          <select id="filter3-value"><option value="">Valor…</option></select>
         </div>
       </div>
 
       <div class="field">
-        <label>Filtro 2 (opcional)</label>
-        <div class="field-row">
-          <select id="filter2-column">
-            <option value="">Columna…</option>
-          </select>
-          <select id="filter2-value">
-            <option value="">Valor…</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Filtro 3 (opcional)</label>
-        <div class="field-row">
-          <select id="filter3-column">
-            <option value="">Columna…</option>
-          </select>
-          <select id="filter3-value">
-            <option value="">Valor…</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Filtro por rango de métrica (opcional)</label>
-        <select id="range-metric-column">
-          <option value="">Métrica…</option>
-        </select>
-        <div class="field-row" style="margin-top:0.3rem;">
+        <label>Métrica por rango (opcional)</label>
+        <select id="range-metric-column"><option value="">Métrica…</option></select>
+        <div class="field-row" style="margin-top:0.25rem;">
           <input type="number" id="range-metric-min" placeholder="Mín" />
           <input type="number" id="range-metric-max" placeholder="Máx" />
         </div>
-        <div class="hint">
-          Ejemplos: utilidad &gt; 0, venta &lt;= 10,000, margen entre 20 y 40, etc.
-        </div>
+        <div class="hint">Ejemplo: Utilidad &gt; 0, Venta &lt; 10000, Margen entre 20 y 40.</div>
       </div>
 
-      <div class="field-row" style="margin-top:0.4rem;">
+      <div class="field-row" style="margin-top:0.35rem;">
         <button id="apply-filters-btn">Aplicar filtros</button>
         <button id="clear-filters-btn" class="btn-secondary">Limpiar</button>
       </div>
 
-      <div class="hint">
-        💡 Usa Filtro 1 para Sucursal, Filtro 2 para Vendedor, Filtro 3 para Categoría, por ejemplo.
-      </div>
-
       <hr />
 
-      <h2 style="margin-top:0.3rem;"><span class="icon">📊</span>Agrupación general</h2>
-
+      <h2><span class="icon">⏱️</span>Año y mes (para YoY)</h2>
       <div class="field">
-        <label for="group-by-select">Agrupar por</label>
-        <select id="group-by-select">
-          <option value="">Selecciona columna…</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="metric-select">Métrica numérica</label>
-        <select id="metric-select">
-          <option value="">Selecciona métrica…</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="agg-type-select">Tipo de cálculo</label>
-        <select id="agg-type-select">
-          <option value="sum">Suma</option>
-          <option value="avg">Promedio</option>
-          <option value="count">Conteo</option>
-          <option value="max">Máximo</option>
-          <option value="min">Mínimo</option>
-        </select>
-      </div>
-
-      <button id="update-agg-btn" style="margin-top:0.4rem;">Actualizar resumen</button>
-
-      <div class="hint">
-        🎯 Ejemplo: agrupa por <b>Categoría</b> y usa como métrica <b>Venta Total</b> o <b>Utilidad</b>.
-      </div>
-
-      <hr />
-
-      <h2 style="margin-top:0.3rem;"><span class="icon">⏱️</span>Configuración Año / Mes</h2>
-      <div class="field">
-        <label for="year-column-select">Columna de Año</label>
-        <select id="year-column-select">
-          <option value="">Selecciona columna…</option>
-        </select>
+        <label for="year-column-select">Columna Año</label>
+        <select id="year-column-select"><option value="">Selecciona…</option></select>
       </div>
       <div class="field">
-        <label for="month-column-select">Columna de Mes</label>
-        <select id="month-column-select">
-          <option value="">Selecciona columna…</option>
-        </select>
-        <div class="hint">
-          Puede ser número (1–12) o nombre de mes (enero, febrero…).
-        </div>
+        <label for="month-column-select">Columna Mes</label>
+        <select id="month-column-select"><option value="">Selecciona…</option></select>
+        <div class="hint">Puede ser número (1–12) o nombre (enero, febrero…).</div>
       </div>
     </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
     <section class="content-area">
-      <!-- KPIs -->
+      <!-- Tabs -->
       <div class="card">
-        <div class="section-title-row">
-          <h2><span class="icon">📌</span>Indicadores rápidos</h2>
-          <div class="chip-row" id="kpi-tags">
-            <span class="chip">Esperando archivo…</span>
-          </div>
+        <div class="tabs">
+          <button class="tab-btn active" data-target="tab-general">Análisis general</button>
+          <button class="tab-btn" data-target="tab-yoy">Comparativo Año vs Año</button>
         </div>
+
+        <!-- KPIs -->
         <div class="kpi-grid">
           <div class="kpi">
-            <div class="label">Registros (filas)</div>
+            <div class="label">Registros</div>
             <div class="value" id="kpi-rows">–</div>
-            <div class="sub">Total de registros cargados tras los filtros.</div>
+            <div class="sub">Filas después de aplicar filtros.</div>
           </div>
           <div class="kpi">
             <div class="label">Suma métrica seleccionada</div>
             <div class="value" id="kpi-metric-sum">–</div>
-            <div class="sub" id="kpi-metric-sum-label">Selecciona una métrica numérica.</div>
+            <div class="sub" id="kpi-metric-sum-label">Elige una métrica abajo.</div>
           </div>
           <div class="kpi">
-            <div class="label">Promedio métrica seleccionada</div>
+            <div class="label">Promedio métrica</div>
             <div class="value" id="kpi-metric-avg">–</div>
-            <div class="sub">En base a los registros filtrados.</div>
+            <div class="sub">En base a los datos filtrados.</div>
           </div>
           <div class="kpi">
-            <div class="label">Columnas detectadas</div>
+            <div class="label">Columnas</div>
             <div class="value" id="kpi-cols">–</div>
             <div class="sub" id="kpi-cols-detail">–</div>
           </div>
         </div>
-      </div>
 
-      <!-- Resumen agrupado + gráfica general -->
-      <div class="flex-row">
-        <div class="flex-col card">
-          <div class="section-title-row">
-            <h2><span class="icon">📈</span>Resumen agrupado (tipo tabla dinámica)</h2>
-            <span class="badge">Top 15 grupos</span>
-          </div>
-          <div class="muted">
-            Ideal para comparar sucursales, vendedores, categorías, clientes, etc.
-          </div>
-          <div id="group-table-container" class="table-container" style="margin-top:0.4rem;">
-            <div class="empty-state">Carga un archivo y elige "Agrupar por" + "Métrica" para ver el resumen.</div>
-          </div>
-        </div>
-
-        <div class="flex-col card">
-          <h2><span class="icon">📉</span>Gráfica comparativa general</h2>
-          <div class="muted">
-            Barra por grupo, basada en la configuración de agrupación general.
-          </div>
-          <div style="height:260px;margin-top:0.6rem;">
-            <canvas id="group-chart"></canvas>
-          </div>
+        <div class="chip-row" id="kpi-tags" style="margin-top:0.45rem;">
+          <span class="chip">Sin archivo cargado.</span>
         </div>
       </div>
 
-      <!-- COMPARATIVO AÑO VS AÑO (MISMO MES) -->
-      <div class="card">
-        <div class="section-title-row">
-          <h2><span class="icon">📅</span>Comparativo Año vs Año (mismo mes)</h2>
-          <span class="badge">YoY mismo mes</span>
-        </div>
+      <!-- TAB 1: Análisis general -->
+      <div id="tab-general" class="card">
+        <h2><span class="icon">📊</span>Análisis general (tipo tabla dinámica)</h2>
         <div class="muted">
-          Selecciona columna de Año y de Mes, el mes a comparar, los dos años, la métrica y cómo quieres agrupar (ej. por Sucursal).
+          1) Aplica filtros en el panel izquierdo.<br>
+          2) Elige una columna para agrupar (Sucursal, Vendedor, Categoría, Cliente, etc.) y una métrica numérica (Venta, Utilidad, Margen…).
         </div>
 
-        <div class="flex-row" style="margin-top:0.6rem; gap:0.7rem;">
+        <div class="flex-row" style="margin-top:0.6rem;">
           <div class="flex-col">
             <div class="field">
-              <label for="yoy-month-value-select">Mes a comparar</label>
-              <select id="yoy-month-value-select">
-                <option value="">Selecciona mes…</option>
-              </select>
+              <label for="group-by-select">Agrupar por</label>
+              <select id="group-by-select"><option value="">Selecciona columna…</option></select>
             </div>
           </div>
           <div class="flex-col">
             <div class="field">
-              <label for="yoy-year-a-select">Año A</label>
-              <select id="yoy-year-a-select">
-                <option value="">Selecciona año…</option>
-              </select>
+              <label for="metric-select">Métrica numérica</label>
+              <select id="metric-select"><option value="">Selecciona métrica…</option></select>
             </div>
           </div>
           <div class="flex-col">
             <div class="field">
-              <label for="yoy-year-b-select">Año B</label>
-              <select id="yoy-year-b-select">
-                <option value="">Selecciona año…</option>
+              <label for="agg-type-select">Operación</label>
+              <select id="agg-type-select">
+                <option value="sum">Suma</option>
+                <option value="avg">Promedio</option>
+                <option value="count">Conteo</option>
+                <option value="max">Máximo</option>
+                <option value="min">Mínimo</option>
               </select>
+            </div>
+          </div>
+          <div class="flex-col" style="align-self:flex-end;">
+            <button id="update-agg-btn">Actualizar análisis</button>
+          </div>
+        </div>
+
+        <div class="flex-row" style="margin-top:0.7rem;">
+          <div class="flex-col">
+            <div class="table-container" id="group-table-container">
+              <div class="empty-state">Carga un archivo, aplica filtros y elige Agrupar por + Métrica.</div>
+            </div>
+          </div>
+          <div class="flex-col">
+            <div style="height:260px;">
+              <canvas id="group-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: YoY -->
+      <div id="tab-yoy" class="card" style="display:none;">
+        <h2><span class="icon">📅</span>Comparativo Año vs Año (mismo mes)</h2>
+        <div class="muted">
+          Usa los filtros globales para quedarte sólo con la sucursal/categoría que quieras. Después:
+          selecciona <b>mes</b>, <b>Año base</b>, <b>Año comparado</b>, <b>métrica</b> y, opcionalmente, cómo quieres agrupar.
+        </div>
+
+        <div class="flex-row" style="margin-top:0.6rem;">
+          <div class="flex-col">
+            <div class="field">
+              <label for="yoy-month-select">Mes</label>
+              <select id="yoy-month-select"><option value="">Selecciona mes…</option></select>
+            </div>
+          </div>
+          <div class="flex-col">
+            <div class="field">
+              <label for="yoy-year-base-select">Año base (A)</label>
+              <select id="yoy-year-base-select"><option value="">Año…</option></select>
+            </div>
+          </div>
+          <div class="flex-col">
+            <div class="field">
+              <label for="yoy-year-comp-select">Año comparado (B)</label>
+              <select id="yoy-year-comp-select"><option value="">Año…</option></select>
             </div>
           </div>
         </div>
 
-        <div class="flex-row" style="margin-top:0.4rem; gap:0.7rem;">
+        <div class="flex-row" style="margin-top:0.4rem;">
           <div class="flex-col">
             <div class="field">
-              <label for="yoy-metric-select">Métrica a comparar</label>
-              <select id="yoy-metric-select">
-                <option value="">Selecciona métrica…</option>
-              </select>
+              <label for="yoy-metric-select">Métrica</label>
+              <select id="yoy-metric-select"><option value="">Selecciona métrica…</option></select>
             </div>
           </div>
           <div class="flex-col">
             <div class="field">
-              <label for="yoy-group-by-select">Agrupar por (opcional)</label>
-              <select id="yoy-group-by-select">
-                <option value="">Sin agrupación (Total)</option>
-              </select>
+              <label for="yoy-group-select">Agrupar por (opcional)</label>
+              <select id="yoy-group-select"><option value="">Sin agrupación (Total)</option></select>
             </div>
           </div>
           <div class="flex-col" style="align-self:flex-end;">
@@ -670,14 +382,12 @@
           </div>
         </div>
 
-        <div class="yoy-summary" id="yoy-summary"></div>
+        <div id="yoy-summary" class="muted" style="margin-top:0.4rem;"></div>
 
-        <div class="flex-row" style="margin-top:0.6rem;">
+        <div class="flex-row" style="margin-top:0.7rem;">
           <div class="flex-col">
-            <div id="yoy-table-container" class="table-container">
-              <div class="empty-state">
-                Configura Año/Mes en el panel izquierdo y luego selecciona mes + años + métrica para ver el comparativo.
-              </div>
+            <div class="table-container" id="yoy-table-container">
+              <div class="empty-state">Configura Año/Mes y selecciona los años + métrica para ver diferencia y %.</div>
             </div>
           </div>
           <div class="flex-col">
@@ -691,25 +401,20 @@
       <!-- Vista previa de datos -->
       <div class="card">
         <h2><span class="icon">🧾</span>Vista previa de datos filtrados</h2>
-        <div class="muted">
-          Solo se muestran las primeras filas para no saturar el navegador.
-        </div>
-        <div id="data-table-container" class="table-container" style="margin-top:0.4rem;">
-          <div class="empty-state">Sin datos. Sube un CSV para iniciar.</div>
+        <div class="muted">Sólo las primeras filas para no saturar el navegador.</div>
+        <div class="table-container" id="data-table-container" style="margin-top:0.4rem;">
+          <div class="empty-state">Sin datos. Carga un CSV para comenzar.</div>
         </div>
       </div>
     </section>
   </main>
 
   <footer>
-    Hecho para Ferretería El Cedro – Análisis detallado de ventas contado/crédito, márgenes, utilidad, vendedores, categorías y comparativos Año vs Año.
+    Panel hecho para Ferretería El Cedro – análisis detallado de ventas y comparativos año vs año.
   </footer>
 
-  <!-- LÓGICA -->
   <script>
-    // -------------------------------------------------------------------
-    // Estado global
-    // -------------------------------------------------------------------
+    // ------------------------ Estado global ------------------------
     let rawData = [];
     let filteredData = [];
     let columns = [];
@@ -717,498 +422,385 @@
     let groupChartInstance = null;
     let yoyChartInstance = null;
 
+    // ---- DOM ----
     const fileInput = document.getElementById('file-input');
 
-    const filter1ColumnSelect = document.getElementById('filter1-column');
-    const filter1ValueSelect = document.getElementById('filter1-value');
-    const filter2ColumnSelect = document.getElementById('filter2-column');
-    const filter2ValueSelect = document.getElementById('filter2-value');
-    const filter3ColumnSelect = document.getElementById('filter3-column');
-    const filter3ValueSelect = document.getElementById('filter3-value');
+    const filter1Column = document.getElementById('filter1-column');
+    const filter1Value  = document.getElementById('filter1-value');
+    const filter2Column = document.getElementById('filter2-column');
+    const filter2Value  = document.getElementById('filter2-value');
+    const filter3Column = document.getElementById('filter3-column');
+    const filter3Value  = document.getElementById('filter3-value');
 
-    const rangeMetricColumnSelect = document.getElementById('range-metric-column');
-    const rangeMetricMinInput = document.getElementById('range-metric-min');
-    const rangeMetricMaxInput = document.getElementById('range-metric-max');
+    const rangeMetricColumn = document.getElementById('range-metric-column');
+    const rangeMetricMin    = document.getElementById('range-metric-min');
+    const rangeMetricMax    = document.getElementById('range-metric-max');
 
     const applyFiltersBtn = document.getElementById('apply-filters-btn');
     const clearFiltersBtn = document.getElementById('clear-filters-btn');
 
-    const groupBySelect = document.getElementById('group-by-select');
-    const metricSelect = document.getElementById('metric-select');
-    const aggTypeSelect = document.getElementById('agg-type-select');
-    const updateAggBtn = document.getElementById('update-agg-btn');
-
-    const yearColumnSelect = document.getElementById('year-column-select');
+    const yearColumnSelect  = document.getElementById('year-column-select');
     const monthColumnSelect = document.getElementById('month-column-select');
 
-    const yoyMonthValueSelect = document.getElementById('yoy-month-value-select');
-    const yoyYearASelect = document.getElementById('yoy-year-a-select');
-    const yoyYearBSelect = document.getElementById('yoy-year-b-select');
-    const yoyMetricSelect = document.getElementById('yoy-metric-select');
-    const yoyGroupBySelect = document.getElementById('yoy-group-by-select');
-    const yoyRunBtn = document.getElementById('yoy-run-btn');
-    const yoyTableContainer = document.getElementById('yoy-table-container');
-    const yoySummaryEl = document.getElementById('yoy-summary');
-    const yoyChartCanvas = document.getElementById('yoy-chart');
-
-    const kpiRowsEl = document.getElementById('kpi-rows');
-    const kpiMetricSumEl = document.getElementById('kpi-metric-sum');
-    const kpiMetricSumLabelEl = document.getElementById('kpi-metric-sum-label');
-    const kpiMetricAvgEl = document.getElementById('kpi-metric-avg');
-    const kpiColsEl = document.getElementById('kpi-cols');
+    const kpiRowsEl       = document.getElementById('kpi-rows');
+    const kpiMetricSumEl  = document.getElementById('kpi-metric-sum');
+    const kpiMetricSumLbl = document.getElementById('kpi-metric-sum-label');
+    const kpiMetricAvgEl  = document.getElementById('kpi-metric-avg');
+    const kpiColsEl       = document.getElementById('kpi-cols');
     const kpiColsDetailEl = document.getElementById('kpi-cols-detail');
-    const kpiTagsEl = document.getElementById('kpi-tags');
+    const kpiTagsEl       = document.getElementById('kpi-tags');
 
+    const groupBySelect = document.getElementById('group-by-select');
+    const metricSelect  = document.getElementById('metric-select');
+    const aggTypeSelect = document.getElementById('agg-type-select');
+    const updateAggBtn  = document.getElementById('update-agg-btn');
     const groupTableContainer = document.getElementById('group-table-container');
-    const groupChartCanvas = document.getElementById('group-chart');
+    const groupChartCanvas    = document.getElementById('group-chart');
+
     const dataTableContainer = document.getElementById('data-table-container');
 
-    // -------------------------------------------------------------------
-    // Utilidades
-    // -------------------------------------------------------------------
-    function normalizeNumber(value) {
-      if (value === null || value === undefined) return NaN;
-      if (typeof value === 'number') return value;
+    // YoY
+    const yoyMonthSelect     = document.getElementById('yoy-month-select');
+    const yoyYearBaseSelect  = document.getElementById('yoy-year-base-select');
+    const yoyYearCompSelect  = document.getElementById('yoy-year-comp-select');
+    const yoyMetricSelect    = document.getElementById('yoy-metric-select');
+    const yoyGroupSelect     = document.getElementById('yoy-group-select');
+    const yoyRunBtn          = document.getElementById('yoy-run-btn');
+    const yoyTableContainer  = document.getElementById('yoy-table-container');
+    const yoyChartCanvas     = document.getElementById('yoy-chart');
+    const yoySummaryEl       = document.getElementById('yoy-summary');
 
-      let s = String(value).trim();
-      if (!s) return NaN;
-      s = s.replace(/[$%]/g, '').replace(/\s/g, '');
-      const commaCount = (s.match(/,/g) || []).length;
-      const dotCount = (s.match(/\./g) || []).length;
-      if (commaCount === 1 && dotCount === 0) {
-        s = s.replace(',', '.');
-      }
-      s = s.replace(/,/g, '');
-      const num = parseFloat(s);
-      return isNaN(num) ? NaN : num;
-    }
-
-    function formatNumber(num) {
-      if (num === null || num === undefined || isNaN(num)) return '–';
-      return num.toLocaleString('es-MX', { maximumFractionDigits: 2 });
-    }
-
-    function createOption(value, label) {
-      const opt = document.createElement('option');
-      opt.value = value;
-      opt.textContent = label;
-      return opt;
-    }
-
-    function uniqueValues(data, column) {
-      const set = new Set();
-      data.forEach(row => {
-        set.add(row[column]);
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const target = btn.dataset.target;
+        document.getElementById('tab-general').style.display = target === 'tab-general' ? '' : 'none';
+        document.getElementById('tab-yoy').style.display     = target === 'tab-yoy' ? '' : 'none';
       });
-      return Array.from(set).filter(v => v !== undefined && v !== null && v !== '');
+    });
+
+    // ------------------------ Utilidades ------------------------
+    function normalizeNumber(v) {
+      if (v === null || v === undefined) return NaN;
+      if (typeof v === 'number') return v;
+      let s = String(v).trim();
+      if (!s) return NaN;
+      s = s.replace(/[$%]/g, '').replace(/\s/g,'');
+      const commas = (s.match(/,/g) || []).length;
+      const dots   = (s.match(/\./g) || []).length;
+      if (commas === 1 && dots === 0) s = s.replace(',', '.');
+      s = s.replace(/,/g,'');
+      const n = parseFloat(s);
+      return isNaN(n) ? NaN : n;
+    }
+
+    function formatNumber(n) {
+      if (n === null || n === undefined || isNaN(n)) return '–';
+      return n.toLocaleString('es-MX',{ maximumFractionDigits:2 });
+    }
+
+    function createOption(value,label) {
+      const o = document.createElement('option');
+      o.value = value;
+      o.textContent = label;
+      return o;
+    }
+
+    function uniqueValues(data, col) {
+      const set = new Set();
+      data.forEach(r => set.add(r[col]));
+      return Array.from(set).filter(v => v !== null && v !== undefined && v !== '');
     }
 
     function detectNumericColumns(data) {
       if (!data.length) return [];
       const cols = Object.keys(data[0]);
       const numeric = [];
-
       cols.forEach(col => {
-        let samples = 0;
-        let numericSamples = 0;
-        for (let i = 0; i < data.length && samples < 60; i++) {
+        let samples = 0, numericSamples = 0;
+        for (let i=0;i<data.length && samples<60;i++) {
           const v = data[i][col];
           if (v === '' || v === null || v === undefined) continue;
           samples++;
-          const n = normalizeNumber(v);
-          if (!isNaN(n)) numericSamples++;
+          if (!isNaN(normalizeNumber(v))) numericSamples++;
         }
-        if (samples > 0 && numericSamples / samples >= 0.6) {
-          numeric.push(col);
-        }
+        if (samples>0 && numericSamples/samples >= 0.6) numeric.push(col);
       });
-
       return numeric;
     }
 
-    // -------------------------------------------------------------------
-    // Carga de archivo CSV
-    // -------------------------------------------------------------------
-    fileInput.addEventListener('change', (e) => {
+    function resetSelect(sel, firstLabel) {
+      while (sel.firstChild) sel.removeChild(sel.firstChild);
+      if (firstLabel !== null) sel.appendChild(createOption('', firstLabel));
+    }
+
+    // ------------------------ Carga CSV ------------------------
+    fileInput.addEventListener('change', e => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
-
-      Papa.parse(file, {
-        header: true,
-        dynamicTyping: false,
-        skipEmptyLines: true,
-        complete: function(results) {
-          rawData = results.data || [];
+      Papa.parse(file,{
+        header:true,
+        dynamicTyping:false,
+        skipEmptyLines:true,
+        complete: res => {
+          rawData = res.data || [];
           filteredData = [...rawData];
           columns = rawData.length ? Object.keys(rawData[0]) : [];
           numericColumns = detectNumericColumns(rawData);
-
-          llenarSelectsColumnas();
+          rellenarUI();
           actualizarKPIs();
           renderDataTable();
-          renderGroupSummaryAndChart();
+          renderGeneral();
           actualizarYoYConfig();
 
           kpiTagsEl.innerHTML = '';
-          const tag1 = document.createElement('span');
-          tag1.className = 'chip';
-          tag1.textContent = 'Archivo: ' + file.name;
-          const tag2 = document.createElement('span');
-          tag2.className = 'chip';
-          tag2.textContent = numericColumns.length + ' columnas numéricas';
-          kpiTagsEl.appendChild(tag1);
-          kpiTagsEl.appendChild(tag2);
+          kpiTagsEl.appendChild(createOptionTag('Archivo: '+file.name));
+          kpiTagsEl.appendChild(createOptionTag(numericColumns.length+' columnas numéricas'));
         },
-        error: function(err) {
-          alert('Ocurrió un error al leer el CSV: ' + err.message);
-        }
+        error: err => alert('Error leyendo CSV: '+err.message)
       });
     });
 
-    // -------------------------------------------------------------------
-    // Llenar selects de columnas
-    // -------------------------------------------------------------------
-    function limpiarSelect(sel, firstLabel) {
-      while (sel.firstChild) sel.removeChild(sel.firstChild);
-      if (firstLabel !== null) {
-        sel.appendChild(createOption('', firstLabel));
-      }
+    function createOptionTag(text){
+      const span = document.createElement('span');
+      span.className = 'chip';
+      span.textContent = text;
+      return span;
     }
 
-    function llenarSelectsColumnas() {
+    // ------------------------ Rellenar selects ------------------------
+    function rellenarUI() {
       // Filtros
-      limpiarSelect(filter1ColumnSelect, 'Columna…');
-      limpiarSelect(filter2ColumnSelect, 'Columna…');
-      limpiarSelect(filter3ColumnSelect, 'Columna…');
-      limpiarSelect(filter1ValueSelect, 'Valor…');
-      limpiarSelect(filter2ValueSelect, 'Valor…');
-      limpiarSelect(filter3ValueSelect, 'Valor…');
-
-      // Agrupación general
-      limpiarSelect(groupBySelect, 'Selecciona columna…');
-      limpiarSelect(metricSelect, 'Selecciona métrica…');
+      [filter1Column,filter2Column,filter3Column].forEach(sel=>{
+        resetSelect(sel,'Columna…');
+        columns.forEach(c=>sel.appendChild(createOption(c,c)));
+      });
+      [filter1Value,filter2Value,filter3Value].forEach(sel=>{
+        resetSelect(sel,'Valor…');
+      });
 
       // Rango métrico
-      limpiarSelect(rangeMetricColumnSelect, 'Métrica…');
+      resetSelect(rangeMetricColumn,'Métrica…');
+      numericColumns.forEach(c=>rangeMetricColumn.appendChild(createOption(c,c)));
 
-      // Año / Mes YoY
-      limpiarSelect(yearColumnSelect, 'Selecciona columna…');
-      limpiarSelect(monthColumnSelect, 'Selecciona columna…');
+      // Agrupación general
+      resetSelect(groupBySelect,'Selecciona columna…');
+      columns.forEach(c=>groupBySelect.appendChild(createOption(c,c)));
+      resetSelect(metricSelect,'Selecciona métrica…');
+      numericColumns.forEach(c=>metricSelect.appendChild(createOption(c,c)));
 
-      // YoY selects
-      limpiarSelect(yoyMonthValueSelect, 'Selecciona mes…');
-      limpiarSelect(yoyYearASelect, 'Selecciona año…');
-      limpiarSelect(yoyYearBSelect, 'Selecciona año…');
-      limpiarSelect(yoyMetricSelect, 'Selecciona métrica…');
-      limpiarSelect(yoyGroupBySelect, null);
-      yoyGroupBySelect.appendChild(createOption('', 'Sin agrupación (Total)'));
-
-      // Llenar con todas las columnas
-      columns.forEach(col => {
-        filter1ColumnSelect.appendChild(createOption(col, col));
-        filter2ColumnSelect.appendChild(createOption(col, col));
-        filter3ColumnSelect.appendChild(createOption(col, col));
-
-        groupBySelect.appendChild(createOption(col, col));
-
-        yearColumnSelect.appendChild(createOption(col, col));
-        monthColumnSelect.appendChild(createOption(col, col));
-        yoyGroupBySelect.appendChild(createOption(col, col));
+      // Año / Mes
+      resetSelect(yearColumnSelect,'Selecciona…');
+      resetSelect(monthColumnSelect,'Selecciona…');
+      columns.forEach(c=>{
+        yearColumnSelect.appendChild(createOption(c,c));
+        monthColumnSelect.appendChild(createOption(c,c));
       });
 
-      // Métricas numéricas
-      numericColumns.forEach(col => {
-        metricSelect.appendChild(createOption(col, col));
-        rangeMetricColumnSelect.appendChild(createOption(col, col));
-        yoyMetricSelect.appendChild(createOption(col, col));
-      });
+      // YoY
+      resetSelect(yoyMetricSelect,'Selecciona métrica…');
+      numericColumns.forEach(c=>yoyMetricSelect.appendChild(createOption(c,c)));
+      resetSelect(yoyGroupSelect,null);
+      yoyGroupSelect.appendChild(createOption('','Sin agrupación (Total)'));
+      columns.forEach(c=>yoyGroupSelect.appendChild(createOption(c,c)));
 
-      // Preseleccionar posibles columnas típicas
-      const lowerCols = columns.map(c => c.toLowerCase());
-      const probableGroup = ['sucursal','vendedor','categoria','categoría','cliente'];
-      const probableMetric = ['venta total','ventas','monto','utilidad','margen','contado','crédito','credito'];
-      const probableYear = ['año','anio','year'];
-      const probableMonth = ['mes'];
+      // Preselecciones típicas
+      const lower = columns.map(c=>c.toLowerCase());
+      const lowerNum = numericColumns.map(c=>c.toLowerCase());
 
-      let defaultGroup = '';
-      for (const key of probableGroup) {
-        const idx = lowerCols.indexOf(key);
-        if (idx >= 0) { defaultGroup = columns[idx]; break; }
-      }
+      const gCandidates = ['sucursal','vendedor','categoria','categoría','cliente'];
+      const mCandidates = ['venta total','ventas','monto','utilidad','margen','contado','crédito','credito'];
+      const yCandidates = ['año','anio','year'];
+      const moCandidates = ['mes'];
 
-      let defaultMetric = '';
-      const lowerNumCols = numericColumns.map(c => c.toLowerCase());
-      for (const key of probableMetric) {
-        const idx = lowerNumCols.indexOf(key);
-        if (idx >= 0) { defaultMetric = numericColumns[idx]; break; }
-      }
+      groupBySelect.value = findMatch(columns,lower,gCandidates) || '';
+      metricSelect.value  = findMatch(numericColumns,lowerNum,mCandidates) || '';
+      yoyMetricSelect.value = metricSelect.value || '';
 
-      let defaultYear = '';
-      for (const key of probableYear) {
-        const idx = lowerCols.indexOf(key);
-        if (idx >= 0) { defaultYear = columns[idx]; break; }
-      }
-
-      let defaultMonth = '';
-      for (const key of probableMonth) {
-        const idx = lowerCols.indexOf(key);
-        if (idx >= 0) { defaultMonth = columns[idx]; break; }
-      }
-
-      if (defaultGroup) {
-        groupBySelect.value = defaultGroup;
-        yoyGroupBySelect.value = defaultGroup;
-      }
-      if (defaultMetric) {
-        metricSelect.value = defaultMetric;
-        yoyMetricSelect.value = defaultMetric;
-        rangeMetricColumnSelect.value = defaultMetric;
-      }
-      if (defaultYear) yearColumnSelect.value = defaultYear;
-      if (defaultMonth) monthColumnSelect.value = defaultMonth;
+      yearColumnSelect.value  = findMatch(columns,lower,yCandidates) || '';
+      monthColumnSelect.value = findMatch(columns,lower,moCandidates) || '';
 
       actualizarYoYConfig();
     }
 
-    // Cuando se elige columna de filtro, llenar valores posibles
-    filter1ColumnSelect.addEventListener('change', () => {
-      llenarValoresFiltro(filter1ColumnSelect, filter1ValueSelect);
-    });
-    filter2ColumnSelect.addEventListener('change', () => {
-      llenarValoresFiltro(filter2ColumnSelect, filter2ValueSelect);
-    });
-    filter3ColumnSelect.addEventListener('change', () => {
-      llenarValoresFiltro(filter3ColumnSelect, filter3ValueSelect);
-    });
-
-    function llenarValoresFiltro(colSelect, valSelect) {
-      const col = colSelect.value;
-      limpiarSelect(valSelect, 'Valor…');
-
-      if (!col || !rawData.length) return;
-
-      const valores = uniqueValues(rawData, col).sort();
-      valSelect.appendChild(createOption('', 'Todos'));
-      valores.forEach(v => {
-        valSelect.appendChild(createOption(v, v));
-      });
+    function findMatch(original,lower,keys){
+      for (const key of keys){
+        const idx = lower.indexOf(key);
+        if (idx>=0) return original[idx];
+      }
+      return '';
     }
 
-    // -------------------------------------------------------------------
-    // Aplicar / limpiar filtros
-    // -------------------------------------------------------------------
-    applyFiltersBtn.addEventListener('click', () => {
+    // Filtros: cuando elijo columna, lleno valores posibles
+    filter1Column.addEventListener('change',()=>fillFilterValues(filter1Column,filter1Value));
+    filter2Column.addEventListener('change',()=>fillFilterValues(filter2Column,filter2Value));
+    filter3Column.addEventListener('change',()=>fillFilterValues(filter3Column,filter3Value));
+
+    function fillFilterValues(colSelect,valSelect){
+      const col = colSelect.value;
+      resetSelect(valSelect,'Valor…');
+      if (!col || !rawData.length) return;
+      const vals = uniqueValues(rawData,col).sort();
+      valSelect.appendChild(createOption('','Todos'));
+      vals.forEach(v=>valSelect.appendChild(createOption(v,v)));
+    }
+
+    // ------------------------ Aplicar / limpiar filtros ------------------------
+    applyFiltersBtn.addEventListener('click',()=>{
       aplicarFiltros();
       actualizarKPIs();
       renderDataTable();
-      renderGroupSummaryAndChart();
+      renderGeneral();
       actualizarYoYConfig();
     });
 
-    clearFiltersBtn.addEventListener('click', () => {
-      // Reset selects
-      filter1ColumnSelect.value = '';
-      filter2ColumnSelect.value = '';
-      filter3ColumnSelect.value = '';
-      limpiarSelect(filter1ValueSelect, 'Valor…');
-      limpiarSelect(filter2ValueSelect, 'Valor…');
-      limpiarSelect(filter3ValueSelect, 'Valor…');
-
-      rangeMetricColumnSelect.value = '';
-      rangeMetricMinInput.value = '';
-      rangeMetricMaxInput.value = '';
-
+    clearFiltersBtn.addEventListener('click',()=>{
+      [filter1Column,filter2Column,filter3Column].forEach(sel=>sel.value='');
+      [filter1Value,filter2Value,filter3Value].forEach(sel=>resetSelect(sel,'Valor…'));
+      rangeMetricColumn.value='';
+      rangeMetricMin.value='';
+      rangeMetricMax.value='';
       filteredData = [...rawData];
       actualizarKPIs();
       renderDataTable();
-      renderGroupSummaryAndChart();
+      renderGeneral();
       actualizarYoYConfig();
     });
 
-    function aplicarFiltros() {
+    function aplicarFiltros(){
       if (!rawData.length) return;
       let data = [...rawData];
 
-      const col1 = filter1ColumnSelect.value;
-      const val1 = filter1ValueSelect.value;
-      const col2 = filter2ColumnSelect.value;
-      const val2 = filter2ValueSelect.value;
-      const col3 = filter3ColumnSelect.value;
-      const val3 = filter3ValueSelect.value;
+      [[filter1Column,filter1Value],[filter2Column,filter2Value],[filter3Column,filter3Value]].forEach(([cSel,vSel])=>{
+        const col = cSel.value;
+        const val = vSel.value;
+        if (col && val) data = data.filter(r=>String(r[col])===String(val));
+      });
 
-      if (col1 && val1) {
-        data = data.filter(row => String(row[col1]) === String(val1));
-      }
-      if (col2 && val2) {
-        data = data.filter(row => String(row[col2]) === String(val2));
-      }
-      if (col3 && val3) {
-        data = data.filter(row => String(row[col3]) === String(val3));
-      }
-
-      const rangeCol = rangeMetricColumnSelect.value;
-      const minStr = rangeMetricMinInput.value;
-      const maxStr = rangeMetricMaxInput.value;
+      const colRange = rangeMetricColumn.value;
+      const minStr = rangeMetricMin.value;
+      const maxStr = rangeMetricMax.value;
       const hasMin = minStr !== '';
       const hasMax = maxStr !== '';
 
-      if (rangeCol && (hasMin || hasMax)) {
+      if (colRange && (hasMin || hasMax)) {
         const minVal = hasMin ? parseFloat(minStr) : null;
         const maxVal = hasMax ? parseFloat(maxStr) : null;
-
-        data = data.filter(row => {
-          const n = normalizeNumber(row[rangeCol]);
+        data = data.filter(r=>{
+          const n = normalizeNumber(r[colRange]);
           if (isNaN(n)) return false;
-          if (minVal !== null && n < minVal) return false;
-          if (maxVal !== null && n > maxVal) return false;
+          if (minVal!==null && n<minVal) return false;
+          if (maxVal!==null && n>maxVal) return false;
           return true;
         });
       }
-
       filteredData = data;
     }
 
-    // -------------------------------------------------------------------
-    // KPIs
-    // -------------------------------------------------------------------
-    function actualizarKPIs() {
-      const rows = filteredData.length;
-      kpiRowsEl.textContent = rows ? formatNumber(rows) : '–';
-
+    // ------------------------ KPIs ------------------------
+    function actualizarKPIs(){
+      kpiRowsEl.textContent = filteredData.length ? formatNumber(filteredData.length) : '–';
       kpiColsEl.textContent = columns.length ? columns.length : '–';
-      if (columns.length) {
-        kpiColsDetailEl.textContent = columns.slice(0, 5).join(', ') + (columns.length > 5 ? '…' : '');
-      } else {
-        kpiColsDetailEl.textContent = 'Sin columnas detectadas.';
-      }
+      kpiColsDetailEl.textContent = columns.length ? columns.slice(0,5).join(', ')+(columns.length>5?'…':'') : '–';
 
       const metric = metricSelect.value;
       if (!metric || !numericColumns.includes(metric)) {
         kpiMetricSumEl.textContent = '–';
         kpiMetricAvgEl.textContent = '–';
-        kpiMetricSumLabelEl.textContent = 'Selecciona una métrica numérica.';
+        kpiMetricSumLbl.textContent = 'Elige una métrica numérica.';
         return;
       }
 
-      let sum = 0;
-      let count = 0;
-      filteredData.forEach(row => {
-        const n = normalizeNumber(row[metric]);
-        if (!isNaN(n)) {
-          sum += n;
-          count++;
-        }
+      let sum=0,count=0;
+      filteredData.forEach(r=>{
+        const n = normalizeNumber(r[metric]);
+        if (!isNaN(n)){ sum+=n; count++; }
       });
-
-      const avg = count ? sum / count : NaN;
+      const avg = count ? sum/count : NaN;
       kpiMetricSumEl.textContent = formatNumber(sum);
       kpiMetricAvgEl.textContent = formatNumber(avg);
-      kpiMetricSumLabelEl.textContent = 'Suma total de "' + metric + '".';
+      kpiMetricSumLbl.textContent = 'Suma total de "'+metric+'".';
     }
 
-    // -------------------------------------------------------------------
-    // Agrupación general
-    // -------------------------------------------------------------------
-    updateAggBtn.addEventListener('click', () => {
+    // ------------------------ Análisis general ------------------------
+    updateAggBtn.addEventListener('click',()=>{
       actualizarKPIs();
-      renderGroupSummaryAndChart();
+      renderGeneral();
     });
 
-    function agruparDatos(data, groupCol, metricCol, aggType) {
+    function agruparDatos(data, groupCol, metricCol, aggType){
       const groups = {};
-      data.forEach(row => {
-        const keyRaw = row[groupCol];
-        const key = keyRaw === undefined || keyRaw === null || keyRaw === '' ? '(Sin valor)' : String(keyRaw);
-        if (!groups[key]) {
-          groups[key] = { count: 0, sum: 0, max: null, min: null };
-        }
+      data.forEach(r=>{
+        const rawKey = r[groupCol];
+        const key = (rawKey===null || rawKey===undefined || rawKey==='') ? '(Sin valor)' : String(rawKey);
+        if (!groups[key]) groups[key] = { count:0, sum:0, max:null, min:null };
         groups[key].count++;
-        const n = normalizeNumber(row[metricCol]);
-        if (!isNaN(n)) {
+        const n = normalizeNumber(r[metricCol]);
+        if (!isNaN(n)){
           groups[key].sum += n;
-          if (groups[key].max === null || n > groups[key].max) groups[key].max = n;
-          if (groups[key].min === null || n < groups[key].min) groups[key].min = n;
+          if (groups[key].max===null || n>groups[key].max) groups[key].max=n;
+          if (groups[key].min===null || n<groups[key].min) groups[key].min=n;
         }
       });
 
       const result = [];
-      for (const key in groups) {
-        const g = groups[key];
+      for (const k in groups){
+        const g = groups[k];
         let value;
-        switch (aggType) {
-          case 'avg':
-            value = g.count ? g.sum / g.count : NaN;
-            break;
-          case 'count':
-            value = g.count;
-            break;
-          case 'max':
-            value = g.max;
-            break;
-          case 'min':
-            value = g.min;
-            break;
-          case 'sum':
-          default:
-            value = g.sum;
+        switch(aggType){
+          case 'avg':  value = g.count ? g.sum/g.count : NaN; break;
+          case 'count':value = g.count; break;
+          case 'max':  value = g.max; break;
+          case 'min':  value = g.min; break;
+          default:     value = g.sum;
         }
-        result.push({ group: key, value, count: g.count, sum: g.sum });
+        result.push({ group:k, value, sum:g.sum, count:g.count });
       }
-
-      result.sort((a, b) => (isNaN(b.value) ? -1 : b.value) - (isNaN(a.value) ? -1 : a.value));
+      result.sort((a,b)=>(isNaN(b.value)?-1:b.value) - (isNaN(a.value)?-1:a.value));
       return result;
     }
 
-    function renderGroupSummaryAndChart() {
+    function renderGeneral(){
       groupTableContainer.innerHTML = '';
+      if (!filteredData.length){
+        groupTableContainer.innerHTML = '<div class="empty-state">No hay datos después de filtros.</div>';
+        if (groupChartInstance){groupChartInstance.destroy();groupChartInstance=null;}
+        return;
+      }
       const groupCol = groupBySelect.value;
       const metricCol = metricSelect.value;
-      const aggType = aggTypeSelect.value;
+      const aggType  = aggTypeSelect.value;
 
-      if (!filteredData.length) {
-        groupTableContainer.innerHTML = '<div class="empty-state">No hay datos. Sube un CSV y aplica filtros.</div>';
-        if (groupChartInstance) { groupChartInstance.destroy(); groupChartInstance = null; }
+      if (!groupCol || !metricCol){
+        groupTableContainer.innerHTML = '<div class="empty-state">Selecciona Agrupar por y una Métrica.</div>';
+        if (groupChartInstance){groupChartInstance.destroy();groupChartInstance=null;}
         return;
       }
 
-      if (!groupCol || !metricCol) {
-        groupTableContainer.innerHTML = '<div class="empty-state">Selecciona "Agrupar por" y una "Métrica numérica" para ver el resumen.</div>';
-        if (groupChartInstance) { groupChartInstance.destroy(); groupChartInstance = null; }
-        return;
-      }
+      const grouped = agruparDatos(filteredData,groupCol,metricCol,aggType);
+      const top = grouped.slice(0,15);
 
-      const grouped = agruparDatos(filteredData, groupCol, metricCol, aggType);
-      const top = grouped.slice(0, 15);
-
-      // Tabla
       const table = document.createElement('table');
       const thead = document.createElement('thead');
       const tbody = document.createElement('tbody');
 
       const trHead = document.createElement('tr');
-      ['Grupo ('+groupCol+')', 'Valor ('+aggType+')', 'Suma', 'Conteo'].forEach(h => {
+      ['Grupo ('+groupCol+')','Valor ('+aggType+')','Suma','Conteo'].forEach(h=>{
         const th = document.createElement('th');
         th.textContent = h;
         trHead.appendChild(th);
       });
       thead.appendChild(trHead);
 
-      top.forEach(row => {
+      top.forEach(r=>{
         const tr = document.createElement('tr');
-        const tdGroup = document.createElement('td');
-        const tdVal = document.createElement('td');
-        const tdSum = document.createElement('td');
-        const tdCount = document.createElement('td');
-
-        tdGroup.textContent = row.group;
-        tdVal.textContent = formatNumber(row.value);
-        tdSum.textContent = formatNumber(row.sum);
-        tdCount.textContent = formatNumber(row.count);
-
-        tr.appendChild(tdGroup);
-        tr.appendChild(tdVal);
-        tr.appendChild(tdSum);
-        tr.appendChild(tdCount);
+        ['group','value','sum','count'].forEach(key=>{
+          const td = document.createElement('td');
+          td.textContent = key==='group' ? r[key] : formatNumber(r[key]);
+          tr.appendChild(td);
+        });
         tbody.appendChild(tr);
       });
 
@@ -1216,78 +808,53 @@
       table.appendChild(tbody);
       groupTableContainer.appendChild(table);
 
-      // Gráfica
-      const labels = top.map(r => r.group);
-      const values = top.map(r => isNaN(r.value) ? 0 : r.value);
+      const labels = top.map(r=>r.group);
+      const values = top.map(r=>isNaN(r.value)?0:r.value);
 
-      if (groupChartInstance) {
-        groupChartInstance.destroy();
-      }
-      groupChartInstance = new Chart(groupChartCanvas, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: metricCol + ' (' + aggType + ')',
-            data: values
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              ticks: { color: '#e5e7eb', maxRotation: 45, minRotation: 0 },
-              grid: { display: false }
-            },
-            y: {
-              ticks: { color: '#e5e7eb' },
-              grid: { color: 'rgba(148,163,184,0.3)' }
-            }
+      if (groupChartInstance){groupChartInstance.destroy();}
+      groupChartInstance = new Chart(groupChartCanvas,{
+        type:'bar',
+        data:{ labels, datasets:[{ label: metricCol+' ('+aggType+')', data:values }] },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          scales:{
+            x:{ticks:{color:'#e5e7eb',maxRotation:45,minRotation:0},grid:{display:false}},
+            y:{ticks:{color:'#e5e7eb'},grid:{color:'rgba(148,163,184,0.3)'}}
           },
-          plugins: {
-            legend: { labels: { color: '#e5e7eb' } },
-            tooltip: {
-              callbacks: {
-                label: function(ctx) {
-                  return ' ' + formatNumber(ctx.raw);
-                }
-              }
-            }
+          plugins:{
+            legend:{labels:{color:'#e5e7eb'}},
+            tooltip:{callbacks:{label:ctx=>' '+formatNumber(ctx.raw)}}
           }
         }
       });
     }
 
-    // -------------------------------------------------------------------
-    // Tabla de datos (vista previa)
-    // -------------------------------------------------------------------
-    function renderDataTable() {
+    // ------------------------ Vista previa datos ------------------------
+    function renderDataTable(){
       dataTableContainer.innerHTML = '';
-
-      if (!filteredData.length) {
-        dataTableContainer.innerHTML = '<div class="empty-state">No hay datos para mostrar. Revisa los filtros o sube un archivo.</div>';
+      if (!filteredData.length){
+        dataTableContainer.innerHTML = '<div class="empty-state">No hay datos. Revisa filtros o carga un archivo.</div>';
         return;
       }
-
       const table = document.createElement('table');
       const thead = document.createElement('thead');
       const tbody = document.createElement('tbody');
 
       const trHead = document.createElement('tr');
-      columns.forEach(col => {
+      columns.forEach(c=>{
         const th = document.createElement('th');
-        th.textContent = col;
+        th.textContent = c;
         trHead.appendChild(th);
       });
       thead.appendChild(trHead);
 
       const maxRows = 80;
-      filteredData.slice(0, maxRows).forEach(row => {
+      filteredData.slice(0,maxRows).forEach(row=>{
         const tr = document.createElement('tr');
-        columns.forEach(col => {
+        columns.forEach(c=>{
           const td = document.createElement('td');
-          td.textContent = row[col];
+          td.textContent = row[c];
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -1297,248 +864,165 @@
       table.appendChild(tbody);
       dataTableContainer.appendChild(table);
 
-      if (filteredData.length > maxRows) {
+      if (filteredData.length>maxRows){
         const note = document.createElement('div');
         note.className = 'muted';
-        note.textContent = 'Mostrando solo las primeras ' + maxRows + ' filas de ' + filteredData.length + '.';
+        note.textContent = 'Mostrando primeras '+maxRows+' filas de '+filteredData.length+'.';
         dataTableContainer.appendChild(note);
       }
     }
 
-    // -------------------------------------------------------------------
-    // Configuración y helpers para YoY
-    // -------------------------------------------------------------------
-    yearColumnSelect.addEventListener('change', actualizarYoYConfig);
-    monthColumnSelect.addEventListener('change', actualizarYoYConfig);
+    // ------------------------ Config YoY ------------------------
+    yearColumnSelect.addEventListener('change',actualizarYoYConfig);
+    monthColumnSelect.addEventListener('change',actualizarYoYConfig);
 
-    function actualizarYoYConfig() {
-      yoyMonthValueSelect.innerHTML = '';
-      yoyMonthValueSelect.appendChild(createOption('', 'Selecciona mes…'));
-      yoyYearASelect.innerHTML = '';
-      yoyYearASelect.appendChild(createOption('', 'Selecciona año…'));
-      yoyYearBSelect.innerHTML = '';
-      yoyYearBSelect.appendChild(createOption('', 'Selecciona año…'));
+    function actualizarYoYConfig(){
+      resetSelect(yoyMonthSelect,'Selecciona mes…');
+      resetSelect(yoyYearBaseSelect,'Año…');
+      resetSelect(yoyYearCompSelect,'Año…');
 
-      const yearCol = yearColumnSelect.value;
-      const monthCol = monthColumnSelect.value;
+      const yCol = yearColumnSelect.value;
+      const mCol = monthColumnSelect.value;
+      if (!filteredData.length || !yCol || !mCol) return;
 
-      if (!rawData.length || !yearCol || !monthCol) return;
+      const meses = uniqueValues(filteredData,mCol).sort();
+      meses.forEach(m=>yoyMonthSelect.appendChild(createOption(m,m)));
 
-      const meses = uniqueValues(rawData, monthCol);
-      meses.sort();
-      meses.forEach(m => {
-        yoyMonthValueSelect.appendChild(createOption(m, m));
-      });
-
-      const years = uniqueValues(rawData, yearCol);
-      years.sort();
-      years.forEach(y => {
-        yoyYearASelect.appendChild(createOption(y, y));
-        yoyYearBSelect.appendChild(createOption(y, y));
+      const years = uniqueValues(filteredData,yCol).sort();
+      years.forEach(y=>{
+        yoyYearBaseSelect.appendChild(createOption(y,y));
+        yoyYearCompSelect.appendChild(createOption(y,y));
       });
     }
 
-    yoyRunBtn.addEventListener('click', () => {
-      calcularYoY();
-    });
+    yoyRunBtn.addEventListener('click',()=>calcularYoY());
 
-    function calcularYoY() {
+    function calcularYoY(){
       yoyTableContainer.innerHTML = '';
-      yoySummaryEl.innerHTML = '';
+      yoySummaryEl.textContent = '';
 
-      const yearCol = yearColumnSelect.value;
-      const monthCol = monthColumnSelect.value;
-      const monthVal = yoyMonthValueSelect.value;
-      const yearA = yoyYearASelect.value;
-      const yearB = yoyYearBSelect.value;
+      const yCol = yearColumnSelect.value;
+      const mCol = monthColumnSelect.value;
+      const monthVal = yoyMonthSelect.value;
+      const yearA = yoyYearBaseSelect.value;
+      const yearB = yoyYearCompSelect.value;
       const metricCol = yoyMetricSelect.value;
-      const groupCol = yoyGroupBySelect.value;
+      const groupCol  = yoyGroupSelect.value;
 
-      if (!filteredData.length) {
-        yoyTableContainer.innerHTML = '<div class="empty-state">No hay datos filtrados. Sube un archivo y aplica filtros.</div>';
-        if (yoyChartInstance) { yoyChartInstance.destroy(); yoyChartInstance = null; }
+      if (!filteredData.length){
+        yoyTableContainer.innerHTML = '<div class="empty-state">No hay datos después de filtros.</div>';
+        if (yoyChartInstance){yoyChartInstance.destroy();yoyChartInstance=null;}
+        return;
+      }
+      if (!yCol || !mCol){
+        yoyTableContainer.innerHTML = '<div class="empty-state">Primero selecciona columna Año y columna Mes.</div>';
+        if (yoyChartInstance){yoyChartInstance.destroy();yoyChartInstance=null;}
+        return;
+      }
+      if (!monthVal || !yearA || !yearB || !metricCol){
+        yoyTableContainer.innerHTML = '<div class="empty-state">Selecciona mes, Año A, Año B y métrica.</div>';
+        if (yoyChartInstance){yoyChartInstance.destroy();yoyChartInstance=null;}
+        return;
+      }
+      if (!numericColumns.includes(metricCol)){
+        yoyTableContainer.innerHTML = '<div class="empty-state">La métrica seleccionada no es numérica.</div>';
+        if (yoyChartInstance){yoyChartInstance.destroy();yoyChartInstance=null;}
         return;
       }
 
-      if (!yearCol || !monthCol) {
-        yoyTableContainer.innerHTML = '<div class="empty-state">Primero selecciona las columnas de Año y Mes en el panel izquierdo.</div>';
-        if (yoyChartInstance) { yoyChartInstance.destroy(); yoyChartInstance = null; }
-        return;
-      }
-
-      if (!monthVal || !yearA || !yearB || !metricCol) {
-        yoyTableContainer.innerHTML = '<div class="empty-state">Selecciona mes, Año A, Año B y la métrica a comparar.</div>';
-        if (yoyChartInstance) { yoyChartInstance.destroy(); yoyChartInstance = null; }
-        return;
-      }
-
-      if (!numericColumns.includes(metricCol)) {
-        yoyTableContainer.innerHTML = '<div class="empty-state">La métrica seleccionada no se detecta como numérica.</div>';
-        if (yoyChartInstance) { yoyChartInstance.destroy(); yoyChartInstance = null; }
-        return;
-      }
-
-      const dataMes = filteredData.filter(row => String(row[monthCol]) === String(monthVal) &&
-                                                 (String(row[yearCol]) === String(yearA) || String(row[yearCol]) === String(yearB)));
-
-      if (!dataMes.length) {
-        yoyTableContainer.innerHTML = '<div class="empty-state">No hay datos para ese mes con los años seleccionados después de filtros.</div>';
-        if (yoyChartInstance) { yoyChartInstance.destroy(); yoyChartInstance = null; }
+      const dataMes = filteredData.filter(r =>
+        String(r[mCol])===String(monthVal) &&
+        (String(r[yCol])===String(yearA) || String(r[yCol])===String(yearB))
+      );
+      if (!dataMes.length){
+        yoyTableContainer.innerHTML = '<div class="empty-state">No hay datos para ese mes y años seleccionados.</div>';
+        if (yoyChartInstance){yoyChartInstance.destroy();yoyChartInstance=null;}
         return;
       }
 
       const groups = {};
-      dataMes.forEach(row => {
-        const yVal = String(row[yearCol]);
-        const gKey = groupCol ? (row[groupCol] ?? '(Sin valor)') : 'TOTAL';
-        const key = String(gKey);
-
-        if (!groups[key]) {
-          groups[key] = { sumA: 0, sumB: 0 };
-        }
-
-        const n = normalizeNumber(row[metricCol]);
+      dataMes.forEach(r=>{
+        const year = String(r[yCol]);
+        const gKey = groupCol ? (r[groupCol] ?? '(Sin valor)') : 'TOTAL';
+        if (!groups[gKey]) groups[gKey] = { sumA:0, sumB:0 };
+        const n = normalizeNumber(r[metricCol]);
         if (isNaN(n)) return;
-
-        if (yVal === String(yearA)) {
-          groups[key].sumA += n;
-        } else if (yVal === String(yearB)) {
-          groups[key].sumB += n;
-        }
+        if (year===String(yearA)) groups[gKey].sumA += n;
+        if (year===String(yearB)) groups[gKey].sumB += n;
       });
 
-      const rows = [];
-      for (const g in groups) {
+      const rows=[];
+      for (const g in groups){
         const sA = groups[g].sumA;
         const sB = groups[g].sumB;
         const diff = sB - sA;
-        const pct = sA === 0 ? (sB === 0 ? NaN : Infinity) : (diff / sA) * 100;
-        rows.push({ group: g, sumA: sA, sumB: sB, diff, pct });
+        const pct  = sA===0 ? (sB===0 ? NaN : Infinity) : (diff/sA)*100;
+        rows.push({ group:g, sumA:sA, sumB:sB, diff, pct });
       }
-
-      if (!rows.length) {
+      if (!rows.length){
         yoyTableContainer.innerHTML = '<div class="empty-state">No hay datos numéricos válidos para esa combinación.</div>';
-        if (yoyChartInstance) { yoyChartInstance.destroy(); yoyChartInstance = null; }
+        if (yoyChartInstance){yoyChartInstance.destroy();yoyChartInstance=null;}
         return;
       }
+      rows.sort((a,b)=>b.sumB - a.sumB);
 
-      rows.sort((a, b) => b.sumB - a.sumB);
+      // Totales
+      let tA=0,tB=0;
+      rows.forEach(r=>{ tA+=r.sumA; tB+=r.sumB; });
+      const tDiff = tB - tA;
+      const tPct = tA===0 ? (tB===0 ? NaN : Infinity) : (tDiff/tA)*100;
 
-      // Totales para el resumen
-      let totalA = 0;
-      let totalB = 0;
-      rows.forEach(r => {
-        totalA += r.sumA;
-        totalB += r.sumB;
-      });
-      const totalDiff = totalB - totalA;
-      const totalPct = totalA === 0 ? (totalB === 0 ? NaN : Infinity) : (totalDiff / totalA) * 100;
+      const pctText = isNaN(tPct) ? '–' : (!isFinite(tPct) ? '∞' : tPct.toFixed(1)+' %');
+      yoySummaryEl.textContent =
+        monthVal+' '+yearA+': '+formatNumber(tA)+' | '+
+        monthVal+' '+yearB+': '+formatNumber(tB)+' | Dif: '+formatNumber(tDiff)+' | Var %: '+pctText;
 
-      const totalPctText = isNaN(totalPct)
-        ? '–'
-        : (!isFinite(totalPct) ? '∞' : totalPct.toFixed(1) + ' %');
-
-      yoySummaryEl.innerHTML = '';
-      const span1 = document.createElement('span');
-      span1.textContent = monthVal + ' ' + yearA + ': ' + formatNumber(totalA);
-      const span2 = document.createElement('span');
-      span2.textContent = monthVal + ' ' + yearB + ': ' + formatNumber(totalB);
-      const span3 = document.createElement('span');
-      span3.textContent = 'Diferencia: ' + formatNumber(totalDiff);
-      const span4 = document.createElement('span');
-      span4.textContent = 'Var %: ' + totalPctText;
-      yoySummaryEl.appendChild(span1);
-      yoySummaryEl.appendChild(span2);
-      yoySummaryEl.appendChild(span3);
-      yoySummaryEl.appendChild(span4);
-
-      // Tabla YoY
+      // Tabla
       const table = document.createElement('table');
       const thead = document.createElement('thead');
       const tbody = document.createElement('tbody');
-
       const trHead = document.createElement('tr');
-      const headers = [
-        groupCol ? 'Grupo ('+groupCol+')' : 'Total',
-        metricCol + ' ' + yearA,
-        metricCol + ' ' + yearB,
-        'Diferencia',
-        'Var %'
-      ];
-      headers.forEach(h => {
-        const th = document.createElement('th');
-        th.textContent = h;
-        trHead.appendChild(th);
+      [groupCol ? 'Grupo ('+groupCol+')':'Total', metricCol+' '+yearA, metricCol+' '+yearB, 'Diferencia', 'Var %'].forEach(h=>{
+        const th = document.createElement('th'); th.textContent = h; trHead.appendChild(th);
       });
       thead.appendChild(trHead);
 
-      rows.forEach(r => {
+      rows.forEach(r=>{
         const tr = document.createElement('tr');
-        const tdGroup = document.createElement('td');
-        const tdA = document.createElement('td');
-        const tdB = document.createElement('td');
-        const tdDiff = document.createElement('td');
-        const tdPct = document.createElement('td');
-
-        tdGroup.textContent = r.group;
-        tdA.textContent = formatNumber(r.sumA);
-        tdB.textContent = formatNumber(r.sumB);
-        tdDiff.textContent = formatNumber(r.diff);
-        const pctText = isNaN(r.pct) ? '–' : (!isFinite(r.pct) ? '∞' : r.pct.toFixed(1) + ' %');
-        tdPct.textContent = pctText;
-
-        tr.appendChild(tdGroup);
-        tr.appendChild(tdA);
-        tr.appendChild(tdB);
-        tr.appendChild(tdDiff);
-        tr.appendChild(tdPct);
+        const pct = isNaN(r.pct) ? '–' : (!isFinite(r.pct) ? '∞' : r.pct.toFixed(1)+' %');
+        [r.group, formatNumber(r.sumA), formatNumber(r.sumB), formatNumber(r.diff), pct].forEach(val=>{
+          const td = document.createElement('td'); td.textContent = val; tr.appendChild(td);
+        });
         tbody.appendChild(tr);
       });
-
-      table.appendChild(thead);
-      table.appendChild(tbody);
+      table.appendChild(thead); table.appendChild(tbody);
       yoyTableContainer.appendChild(table);
 
-      // Gráfica YoY
-      const labels = rows.map(r => r.group);
-      const dataA = rows.map(r => r.sumA);
-      const dataB = rows.map(r => r.sumB);
+      // Gráfica
+      const labels = rows.map(r=>r.group);
+      const dataA  = rows.map(r=>r.sumA);
+      const dataB  = rows.map(r=>r.sumB);
 
-      if (yoyChartInstance) {
-        yoyChartInstance.destroy();
-      }
-
-      yoyChartInstance = new Chart(yoyChartCanvas, {
-        type: 'bar',
-        data: {
+      if (yoyChartInstance){yoyChartInstance.destroy();}
+      yoyChartInstance = new Chart(yoyChartCanvas,{
+        type:'bar',
+        data:{
           labels,
-          datasets: [
-            { label: yearA, data: dataA },
-            { label: yearB, data: dataB }
+          datasets:[
+            { label: yearA, data:dataA },
+            { label: yearB, data:dataB }
           ]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              ticks: { color: '#e5e7eb', maxRotation: 45, minRotation: 0 },
-              grid: { display: false }
-            },
-            y: {
-              ticks: { color: '#e5e7eb' },
-              grid: { color: 'rgba(148,163,184,0.3)' }
-            }
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          scales:{
+            x:{ticks:{color:'#e5e7eb',maxRotation:45,minRotation:0},grid:{display:false}},
+            y:{ticks:{color:'#e5e7eb'},grid:{color:'rgba(148,163,184,0.3)'}}
           },
-          plugins: {
-            legend: { labels: { color: '#e5e7eb' } },
-            tooltip: {
-              callbacks: {
-                label: function(ctx) {
-                  return ' ' + formatNumber(ctx.raw);
-                }
-              }
-            }
+          plugins:{
+            legend:{labels:{color:'#e5e7eb'}},
+            tooltip:{callbacks:{label:ctx=>' '+formatNumber(ctx.raw)}}
           }
         }
       });
